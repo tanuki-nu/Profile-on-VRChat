@@ -3,73 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Context Viewer</title>
+    <title>GitHub Context Navigator</title>
     <style>
         /* 背景色 #C8C8BE */
         body {
             background-color: #C8C8BE;
             margin: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            justify-content: flex-start; /* 左側に目次を置くため */
+            align-items: flex-start;
+            min-height: 100vh;
             font-family: sans-serif;
+            scroll-behavior: smooth; /* スムーズにジャンプさせる */
         }
 
-        /* 透過度60%のダイアログ */
-        #content-box {
-            width: 85%;
-            max-width: 500px;
+        /* --- 目次（左側固定） --- */
+        #nav-sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 40px 20px;
+            background-color: rgba(255, 255, 255, 0.3); /* ダイアログより薄い透過 */
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-item {
+            display: block;
+            padding: 10px;
+            margin-bottom: 5px;
+            color: #444;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* --- メインコンテンツ --- */
+        #main-wrapper {
+            margin-left: 290px; /* 目次の幅 + 余白 */
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
             padding: 40px;
-            background-color: rgba(255, 255, 255, 0.6);
-            border-radius: 30px; /* 丸ぶち */
+        }
+
+        #content-box {
+            width: 100%;
+            max-width: 700px;
+            padding: 50px;
+            background-color: rgba(255, 255, 255, 0.6); /* 透過度60% */
+            border-radius: 30px;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            text-align: center;
         }
 
-        #text-target {
-            white-space: pre-wrap; /* 改行反映 */
-            line-height: 1.8;
-            color: #333;
-            font-size: 1.1rem;
+        /* タイトルと段落のスタイル */
+        .section-title {
+            display: block;
+            font-weight: bold;
+            font-size: 1.6rem;
+            margin: 40px 0 15px 0;
+            color: #2c3e50;
+            cursor: pointer;
+            scroll-margin-top: 40px; /* ジャンプした時の上の余白 */
+        }
+
+        .section-title:first-child { margin-top: 0; }
+
+        .section-text {
+            display: block;
+            white-space: pre-wrap;
+            line-height: 2;
+            color: #444;
+            margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
 
-    <div id="content-box">
-        <div id="text-target">読み込み中...</div>
+    <nav id="nav-sidebar">
+        <div style="font-weight: bold; margin-bottom: 20px; color: #2c3e50;">INDEX</div>
+        <div id="nav-list"></div>
+    </nav>
+
+    <div id="main-wrapper">
+        <div id="content-box">
+            <div id="text-target">読み込み中...</div>
+        </div>
     </div>
 
     <script>
-        // 同一リポジトリ内にある場合は、相対パスで指定可能
-        // GitHub Pagesなどで公開すると、同じディレクトリのcontext.txtを取得します
         const filePath = "./context.txt";
 
-        async function fetchLocalContent() {
-            const display = document.getElementById('text-target');
+        async function fetchAndBuild() {
+            const container = document.getElementById('text-target');
+            const navList = document.getElementById('nav-list');
+            
             try {
-                // 同じ場所にあるファイルをフェッチ
                 const response = await fetch(filePath);
-                
-                if (!response.ok) {
-                    throw new Error('File not found');
-                }
-                
-                const text = await response.text();
-                display.textContent = text;
+                if (!response.ok) throw new Error();
+                const rawText = await response.text();
+
+                container.innerHTML = "";
+                navList.innerHTML = "";
+
+                const sections = rawText.split(/(《[^》]+》)/g);
+                let sectionCount = 0;
+
+                sections.forEach(part => {
+                    if (part.startsWith('《') && part.endsWith('》')) {
+                        sectionCount++;
+                        const titleText = part.replace(/[《》]/g, '');
+                        const sectionId = `section-${sectionCount}`;
+
+                        // 1. 本文側の見出し作成
+                        const h = document.createElement('span');
+                        h.className = 'section-title';
+                        h.id = sectionId;
+                        h.textContent = titleText;
+                        container.appendChild(h);
+
+                        // 2. 左側目次のアイテム作成
+                        const navItem = document.createElement('a');
+                        navItem.className = 'nav-item';
+                        navItem.textContent = titleText;
+                        navItem.href = `#${sectionId}`; // アンカーリンク
+                        navList.appendChild(navItem);
+
+                    } else if (part.trim() !== "") {
+                        const p = document.createElement('span');
+                        p.className = 'section-text';
+                        p.textContent = part.trim();
+                        container.appendChild(p);
+                    }
+                });
+
             } catch (err) {
-                // ローカル（自分のPC）で直接HTMLを開くとCORSエラーが出るため、
-                // その場合はGitHub上のRaw URLを参照するようにフォールバックさせると便利です
-                console.warn("相対パスでの取得に失敗しました。GitHub Pages上でのみ動作します。");
-                display.textContent = "ファイルを読み込めませんでした。";
+                container.textContent = "読み込みエラーが発生しました。";
             }
         }
 
-        fetchLocalContent();
+        fetchAndBuild();
     </script>
 </body>
 </html>

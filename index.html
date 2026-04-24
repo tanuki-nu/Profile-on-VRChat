@@ -13,7 +13,7 @@
             justify-content: flex-start; /* 左側に目次を置くため */
             align-items: flex-start;
             min-height: 100vh;
-            font-family: sans-serif;
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
             scroll-behavior: smooth; /* スムーズにジャンプさせる */
         }
 
@@ -29,54 +29,69 @@
             border-right: 1px solid rgba(255, 255, 255, 0.2);
             overflow-y: auto;
             backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-sizing: border-box;
+        }
+
+        #nav-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        #nav-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
         }
 
         .nav-item {
             display: block;
-            padding: 10px;
-            margin-bottom: 5px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
             color: #444;
             text-decoration: none;
             font-size: 0.9rem;
-            border-radius: 8px;
-            transition: background 0.3s;
+            border-radius: 12px;
+            transition: all 0.3s ease;
             cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .nav-item:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: translateX(5px);
         }
 
         /* --- メインコンテンツ --- */
         #main-wrapper {
-            margin-left: 290px; /* 目次の幅 + 余白 */
+            margin-left: 250px; /* 目次の幅 */
             flex-grow: 1;
             display: flex;
             justify-content: center;
             padding: 40px;
+            box-sizing: border-box;
         }
 
         #content-box {
             width: 100%;
-            max-width: 700px;
-            padding: 50px;
+            max-width: 750px;
+            padding: 60px;
             background-color: rgba(255, 255, 255, 0.6); /* 透過度60% */
-            border-radius: 30px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 40px; /* 丸ぶち */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-sizing: border-box;
         }
 
         /* タイトルと段落のスタイル */
         .section-title {
             display: block;
             font-weight: bold;
-            font-size: 1.6rem;
-            margin: 40px 0 15px 0;
+            font-size: 1.8rem;
+            margin: 50px 0 20px 0;
             color: #2c3e50;
-            cursor: pointer;
-            scroll-margin-top: 40px; /* ジャンプした時の上の余白 */
+            scroll-margin-top: 60px; /* ジャンプ時の余白 */
+            border-left: 5px solid #2c3e50;
+            padding-left: 15px;
         }
 
         .section-title:first-child { margin-top: 0; }
@@ -86,20 +101,29 @@
             white-space: pre-wrap;
             line-height: 2;
             color: #444;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            font-size: 1.05rem;
+            text-align: justify;
+        }
+
+        /* 読み込み中表示 */
+        .loading {
+            text-align: center;
+            color: #777;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
 
     <nav id="nav-sidebar">
-        <div style="font-weight: bold; margin-bottom: 20px; color: #2c3e50;">INDEX</div>
+        <div style="font-weight: bold; margin-bottom: 30px; letter-spacing: 2px; color: #2c3e50; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">INDEX</div>
         <div id="nav-list"></div>
     </nav>
 
     <div id="main-wrapper">
         <div id="content-box">
-            <div id="text-target">読み込み中...</div>
+            <div id="text-target" class="loading">最新のデータを取得中...</div>
         </div>
     </div>
 
@@ -111,13 +135,20 @@
             const navList = document.getElementById('nav-list');
             
             try {
-                const response = await fetch(filePath);
-                if (!response.ok) throw new Error();
+                // キャッシュ対策: URLの末尾に現在の時間を付けて、常に「新しいリクエスト」として送る
+                const cacheBuster = `?t=${new Date().getTime()}`;
+                const response = await fetch(filePath + cacheBuster, {
+                    cache: "no-store"
+                });
+
+                if (!response.ok) throw new Error('File not found');
                 const rawText = await response.text();
 
+                // 画面をリセット
                 container.innerHTML = "";
                 navList.innerHTML = "";
 
+                // 《 》で文章を分割
                 const sections = rawText.split(/(《[^》]+》)/g);
                 let sectionCount = 0;
 
@@ -127,21 +158,22 @@
                         const titleText = part.replace(/[《》]/g, '');
                         const sectionId = `section-${sectionCount}`;
 
-                        // 1. 本文側の見出し作成
+                        // 1. 本文側の見出し（アンカー先）
                         const h = document.createElement('span');
                         h.className = 'section-title';
                         h.id = sectionId;
                         h.textContent = titleText;
                         container.appendChild(h);
 
-                        // 2. 左側目次のアイテム作成
+                        // 2. 目次アイテム
                         const navItem = document.createElement('a');
                         navItem.className = 'nav-item';
                         navItem.textContent = titleText;
-                        navItem.href = `#${sectionId}`; // アンカーリンク
+                        navItem.href = `#${sectionId}`;
                         navList.appendChild(navItem);
 
                     } else if (part.trim() !== "") {
+                        // 本文
                         const p = document.createElement('span');
                         p.className = 'section-text';
                         p.textContent = part.trim();
@@ -150,10 +182,12 @@
                 });
 
             } catch (err) {
-                container.textContent = "読み込みエラーが発生しました。";
+                container.innerHTML = `<div style="color:red;">データの取得に失敗しました。<br>リポジトリに context.txt が存在するか確認してください。</div>`;
+                console.error(err);
             }
         }
 
+        // 実行
         fetchAndBuild();
     </script>
 </body>

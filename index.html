@@ -5,156 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>たぬきーぬのプロフィール</title>
     <style>
-        :root {
-            --bg-dark: #0d1117;
-            --border-color: #30363d;
-            --header-bg: #161b22;
-            --text-color: #c9d1d9;
-            --accent-blue: #58a6ff;
-            --secondary-bg: #21262d;
+        /* 1. 背景を薄めのベージュに設定し、中央配置の準備 */
+        body {
+            background-color: #f5f5dc; /* ベージュ */
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
         }
 
-        body, html {
-            margin: 0; padding: 0; height: 100%; overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
+        /* 2. ダイアログボックスの設定 */
+        #content-box {
+            width: 80%;
+            max-width: 600px;
+            padding: 30px;
+            
+            /* 透過度60%の白背景 */
+            background-color: rgba(255, 255, 255, 0.6);
+            
+            /* 丸ぶち（角丸） */
+            border-radius: 20px;
+            
+            /* ぼかし効果を加えると透過がより綺麗に見えます */
+            backdrop-filter: blur(5px);
+            
+            /* 軽い影をつけて浮遊感を出す */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            white-space: pre-wrap; /* 改行を維持 */
+            color: #333;
+            line-height: 1.6;
         }
 
-        /* ぼかし背景 */
-        .blurred-background {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1;
-            background: linear-gradient(135deg, #1a2a4a 0%, #0d1117 50%, #2a1a3a 100%);
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-color: #0d1117;
-            filter: blur(8px);
+        h2 {
+            margin-top: 0;
+            color: #5d5d5d;
         }
-
-        .main-content {
-            height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
-        }
-
-        .container {
-            width: 100%; max-width: 900px;
-            background-color: rgba(13, 17, 23, 0.75);
-            border: 1px solid var(--border-color); border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-            display: flex; flex-direction: column; overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        /* ヘッダー */
-        .file-header {
-            background-color: rgba(22, 27, 34, 0.8);
-            padding: 12px 16px; border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: space-between;
-            backdrop-filter: blur(10px);
-        }
-
-        .file-info { display: flex; align-items: center; color: var(--text-color); font-size: 14px; }
-        .file-name { font-weight: 600; color: var(--accent-blue); margin-left: 8px; }
-
-        /* オーディオセクション（非表示） */
-        .audio-section {
-            display: none;
-        }
-
-        /* テキスト表示部分 - ダイアログボックス風 */
-        #file-display {
-            padding: 20px; margin: 16px;
-            color: var(--text-color);
-            font-family: ui-monospace, SFMono-Regular, monospace;
-            font-size: 14px; line-height: 1.6;
-            white-space: pre-wrap; overflow-y: auto;
-            max-height: 65vh;
-            background-color: rgba(33, 38, 45, 0.65);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(48, 54, 61, 0.8);
-            border-radius: 8px;
-        }
-
-        /* スクロールバースタイル */
-        #file-display::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #file-display::-webkit-scrollbar-track {
-            background: rgba(48, 54, 61, 0.5);
-            border-radius: 4px;
-        }
-
-        #file-display::-webkit-scrollbar-thumb {
-            background: rgba(88, 166, 255, 0.6);
-            border-radius: 4px;
-        }
-
-        #file-display::-webkit-scrollbar-thumb:hover {
-            background: rgba(88, 166, 255, 0.8);
-        }
-
-        .loading { color: #8b949e; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <div class="blurred-background"></div>
-
-    <div class="main-content">
-        <div class="container">
-            <div class="file-header">
-                <div class="file-info">
-                    <svg height="16" viewBox="0 0 16 16" width="16" fill="#8b949e"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7-3.25v2.992l1.232.711a.75.75 0 1 1-.75 1.298l-1.5-.866A.75.75 0 0 1 7.25 8V4.75a.75.75 0 0 1 1.5 0Z"></path></svg>
-                    <span class="file-name" id="file-name-label">loading...</span>
-                </div>
-            </div>
-
-            <audio id="audio-player" autoplay loop>
-                <source src="audio.mp3" type="audio/mpeg">
-            </audio>
-
-            <pre id="file-display" class="loading">テキストを読み込み中...</pre>
-        </div>
+    <div id="content-box">
+        <h2>Content</h2>
+        <div id="text-target">読み込み中...</div>
     </div>
 
-<script>
-    const targetFile = 'content.txt'; 
+    <script>
+        // 設定をあなたの環境に合わせて変更してください
+        const userName = "あなたのユーザー名";
+        const repoName = "リポジトリ名";
+        const branch = "main";
+        const filePath = "context.txt";
 
-    async function initialize() {
-        const displayElement = document.getElementById('file-display');
-        const labelElement = document.getElementById('file-name-label');
-        const audio = document.getElementById('audio-player');
-        
-        labelElement.textContent = targetFile;
+        const url = `https://raw.githubusercontent.com/${userName}/${repoName}/${branch}/${filePath}`;
 
-        // クリックで再生開始（ブラウザ制限対策）
-        const startAudio = () => {
-            audio.play().catch(e => console.log("Playback blocked:", e));
-            window.removeEventListener('click', startAudio);
-            window.removeEventListener('touchstart', startAudio);
-        };
-        window.addEventListener('click', startAudio);
-        window.addEventListener('touchstart', startAudio);
-
-        if (window.location.protocol === 'file:') {
-            displayElement.innerHTML = `<span style="color:#ff7b72">Error: ローカル環境ではファイルを読み込めません。<br>Live Server等を使用してください。</span>`;
-            return;
+        async function loadGitHubText() {
+            const displayElement = document.getElementById('text-target');
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('取得失敗');
+                const text = await response.text();
+                displayElement.textContent = text;
+            } catch (error) {
+                displayElement.textContent = "データの読み込みに失敗しました。";
+            }
         }
 
-        try {
-            const response = await fetch(targetFile);
-            if (!response.ok) throw new Error('File not found');
-            const text = await response.text();
-            displayElement.textContent = text;
-            displayElement.classList.remove('loading');
-        } catch (error) {
-            displayElement.textContent = "テキストファイルの読み込みに失敗しました。";
-        }
-    }
-
-    initialize();
-</script>
-
+        loadGitHubText();
+    </script>
 </body>
 </html>

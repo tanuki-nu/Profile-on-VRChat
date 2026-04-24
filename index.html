@@ -3,51 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Style Text Viewer</title>
+    <title>GitHub Style Text Viewer with Blur BG</title>
     <style>
         :root {
             --bg-dark: #0d1117;
             --border-color: #30363d;
             --header-bg: #161b22;
             --text-color: #c9d1d9;
+            --accent-blue: #58a6ff;
         }
 
-        body {
+        body, html {
             margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            
-            /* 背景画像の設定：リポジトリ内のPNGを指定 */
-            background-image: 
-                linear-gradient(rgba(13, 17, 23, 0.8), rgba(13, 17, 23, 0.8)), 
-                url('background.png'); 
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* 背景がはみ出ないように */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         }
 
+        /* ぼかし背景専用のレイヤー */
+        .blurred-background {
+            position: fixed;
+            top: -10px; /* ブラーの白い縁を隠すために少し広げる */
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            z-index: -1; /* コンテンツの下に配置 */
+
+            /* 【重要】ここをリポジトリ内のPNGファイル名に変更してください */
+            background-image: url('background.png');
+            
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            /* --- ぼかし（ブラー）の設定 --- */
+            filter: blur(8px); /* ぼかしの強さ。数値を大きくすると強くなります */
+            
+            /* 少し暗くして文字を読みやすくする */
+            background-blend-mode: overlay;
+            background-color: rgba(0, 0, 0, 0.4); 
+        }
+
+        /* メインコンテンツ（テキスト表示エリア）のコンテナ */
+        .main-content {
+            position: relative;
+            z-index: 1; /* 背景の上に配置 */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
         .container {
-            width: 90%;
+            width: 100%;
             max-width: 1000px;
-            background-color: var(--bg-dark);
+            max-height: 90vh; /* 画面からはみ出ないように */
+            background-color: rgba(13, 17, 23, 0.9); /* 少し透過させて背景を感じさせる */
             border: 1px solid var(--border-color);
             border-radius: 6px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
 
+        /* GitHub風のヘッダー */
         .file-header {
             background-color: var(--header-bg);
             padding: 12px 16px;
             border-bottom: 1px solid var(--border-color);
             font-size: 14px;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
             color: var(--text-color);
+            flex-shrink: 0; /* ヘッダーは縮ませない */
+        }
+
+        .file-icon {
+            margin-right: 8px;
+            fill: #8b949e;
+        }
+
+        #file-name-label {
+            font-weight: 600;
+            color: var(--accent-blue);
         }
 
         /* テキスト表示エリア */
@@ -60,8 +102,23 @@
             line-height: 1.6;
             white-space: pre-wrap;
             word-break: break-all;
-            overflow-x: auto;
-            min-height: 200px;
+            overflow-y: auto; /* 縦スクロールを有効に */
+            background-color: transparent; /* コンテナの背景色を使う */
+        }
+
+        /* ローカル実行時の警告メッセージ用 */
+        #error-message {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            z-index: 10;
         }
 
         .loading { color: #8b949e; font-style: italic; }
@@ -70,36 +127,54 @@
 </head>
 <body>
 
-<div class="container">
-    <div class="file-header">
-        <span id="file-name-label">loading...</span>
+    <div class="blurred-background"></div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="file-header">
+                <svg class="file-icon" aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16H3.75A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>
+                <span id="file-name-label">loading...</span>
+            </div>
+            <pre id="file-display" class="loading">ファイルを読み込み中...</pre>
+        </div>
     </div>
-    <pre id="file-display" class="loading">ファイルを読み込み中...</pre>
-</div>
+
+    <div id="error-message">
+        Fetch API エラー: セキュリティ制限(CORS)により、ローカルのファイルは直接読み込めません。<br>
+        VSCodeの「Live Server」を使用するか、GitHub Pagesにアップロードして確認してください。
+    </div>
 
 <script>
     // --- 設定項目 ---
     const targetFile = 'content.txt'; // 読み込みたいテキストファイル名
-    const imagePath = 'background.png'; // 背景画像のファイル名
 
     async function loadTextFile() {
         const displayElement = document.getElementById('file-display');
         const labelElement = document.getElementById('file-name-label');
+        const errorElement = document.getElementById('error-message');
         
         labelElement.textContent = targetFile;
+
+        // ローカル環境（file://）での実行チェック
+        if (window.location.protocol === 'file:') {
+            errorElement.style.display = 'block';
+            displayElement.textContent = `Error: ローカル環境ではファイルを読み込めません。\nLive Serverなどを使用してください。`;
+            displayElement.classList.add('error');
+            return;
+        }
 
         try {
             const response = await fetch(targetFile);
             
             if (!response.ok) {
-                throw new Error('ファイルの読み込みに失敗しました。');
+                throw new Error(`ファイルの読み込みに失敗しました (${response.status} ${response.statusText})`);
             }
 
             const text = await response.text();
             displayElement.textContent = text;
             displayElement.classList.remove('loading');
         } catch (error) {
-            displayElement.textContent = `Error: ${error.message}\n\n※ローカル環境で直接HTMLを開くと、ブラウザのセキュリティ制限(CORS)によりFetchがブロックされる場合があります。その場合はVSCodeのLive Serverなどを使用してください。`;
+            displayElement.textContent = `Error: ${error.message}`;
             displayElement.classList.add('error');
         }
     }

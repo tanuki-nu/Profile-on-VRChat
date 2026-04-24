@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Style Text Viewer</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --border-color: #30363d;
+            --header-bg: #161b22;
+            --text-color: #c9d1d9;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            /* 背景画像の設定：リポジトリ内のPNGを指定 */
+            background-image: 
+                linear-gradient(rgba(13, 17, 23, 0.8), rgba(13, 17, 23, 0.8)), 
+                url('background.png'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .file-header {
+            background-color: var(--header-bg);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-color);
+        }
+
+        /* テキスト表示エリア */
+        #file-display {
+            padding: 20px;
+            margin: 0;
+            color: var(--text-color);
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-x: auto;
+            min-height: 200px;
+        }
+
+        .loading { color: #8b949e; font-style: italic; }
+        .error { color: #ff7b72; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="file-header">
+        <span id="file-name-label">loading...</span>
+    </div>
+    <pre id="file-display" class="loading">ファイルを読み込み中...</pre>
+</div>
+
+<script>
+    // --- 設定項目 ---
+    const targetFile = 'content.txt'; // 読み込みたいテキストファイル名
+    const imagePath = 'background.png'; // 背景画像のファイル名
+
+    async function loadTextFile() {
+        const displayElement = document.getElementById('file-display');
+        const labelElement = document.getElementById('file-name-label');
+        
+        labelElement.textContent = targetFile;
+
+        try {
+            const response = await fetch(targetFile);
+            
+            if (!response.ok) {
+                throw new Error('ファイルの読み込みに失敗しました。');
+            }
+
+            const text = await response.text();
+            displayElement.textContent = text;
+            displayElement.classList.remove('loading');
+        } catch (error) {
+            displayElement.textContent = `Error: ${error.message}\n\n※ローカル環境で直接HTMLを開くと、ブラウザのセキュリティ制限(CORS)によりFetchがブロックされる場合があります。その場合はVSCodeのLive Serverなどを使用してください。`;
+            displayElement.classList.add('error');
+        }
+    }
+
+    // 実行
+    loadTextFile();
+</script>
+
+</body>
+</html>

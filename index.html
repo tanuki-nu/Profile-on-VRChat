@@ -106,6 +106,17 @@
             text-align: justify;
         }
 
+        /* リンクのスタイル */
+        .section-text a {
+            color: #0066cc;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .section-text a:hover {
+            color: #0052a3;
+        }
+
         /* 読み込み中表示 */
         .loading {
             text-align: center;
@@ -129,6 +140,29 @@
 
     <script>
         const filePath = "./context.txt";
+
+        // URLを検出してリンク化する関数
+        function linkifyText(text) {
+            // URLパターン（http, https, ftp）
+            const urlPattern = /(https?:\/\/[^\s]+|ftp:\/\/[^\s]+)/g;
+            const parts = text.split(urlPattern);
+            
+            const container = document.createElement('span');
+            parts.forEach(part => {
+                if (part && (part.startsWith('http://') || part.startsWith('https://') || part.startsWith('ftp://'))) {
+                    const a = document.createElement('a');
+                    a.href = part;
+                    a.textContent = part;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    container.appendChild(a);
+                } else {
+                    container.appendChild(document.createTextNode(part));
+                }
+            });
+            
+            return container.childNodes;
+        }
 
         async function fetchAndBuild() {
             const container = document.getElementById('text-target');
@@ -176,7 +210,13 @@
                         // 本文
                         const p = document.createElement('span');
                         p.className = 'section-text';
-                        p.textContent = part.trim();
+                        
+                        // テキストをリンク化
+                        const nodes = linkifyText(part.trim());
+                        nodes.forEach(node => {
+                            p.appendChild(node.cloneNode(true));
+                        });
+                        
                         container.appendChild(p);
                     }
                 });

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>たぬきーぬのプロフィール</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         /* 背景色 #C8C8BE */
         body {
@@ -125,6 +128,41 @@
             color: #777;
             font-style: italic;
         }
+
+        /* --- 来場者カウンター --- */
+        #visitor-counter {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            text-align: center;
+            transition: opacity 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #visitor-counter.faded {
+            opacity: 0.3;
+        }
+
+        .counter-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .counter-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+
+        .counter-loading {
+            font-size: 0.9rem;
+            color: #999;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -132,6 +170,14 @@
     <nav id="nav-sidebar">
         <div style="font-weight: bold; margin-bottom: 30px; letter-spacing: 2px; color: #2c3e50; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">INDEX</div>
         <div id="nav-list"></div>
+        
+        <!-- 来場者カウンター -->
+        <div id="visitor-counter">
+            <div class="counter-label">来場者数</div>
+            <div class="counter-number" id="counter-display">
+                <span class="counter-loading">読み込み中...</span>
+            </div>
+        </div>
     </nav>
 
     <div id="main-wrapper">
@@ -142,6 +188,89 @@
 
     <script>
         const filePath = "./context.txt";
+
+        // Firebase初期化（ユーザーが設定を追加する必要あり）
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Firebase初期化
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // 来場者カウンター機能
+        class VisitorCounter {
+            constructor() {
+                this.counterRef = database.ref('visitor_count');
+                this.sessionKey = 'visitor_session';
+                this.init();
+            }
+
+            async init() {
+                // セッションチェック（同じセッションでの重複カウントを防ぐ）
+                if (!sessionStorage.getItem(this.sessionKey)) {
+                    await this.incrementCounter();
+                    sessionStorage.setItem(this.sessionKey, 'true');
+                }
+                this.displayCounter();
+                this.setupScrollListener();
+            }
+
+            async incrementCounter() {
+                try {
+                    await this.counterRef.transaction((currentCount) => {
+                        return (currentCount || 0) + 1;
+                    });
+                } catch (error) {
+                    console.error('カウンター更新エラー:', error);
+                }
+            }
+
+            displayCounter() {
+                const display = document.getElementById('counter-display');
+                
+                this.counterRef.on('value', (snapshot) => {
+                    const count = snapshot.val() || 0;
+                    display.innerHTML = count.toLocaleString();
+                }, (error) => {
+                    console.error('カウンター読み取りエラー:', error);
+                    display.innerHTML = 'エラー';
+                });
+            }
+
+            setupScrollListener() {
+                const navSidebar = document.getElementById('nav-sidebar');
+                const visitorCounter = document.getElementById('visitor-counter');
+                const navList = document.getElementById('nav-list');
+                
+                const checkOverlap = () => {
+                    const navRect = navList.getBoundingClientRect();
+                    const counterRect = visitorCounter.getBoundingClientRect();
+                    
+                    // INDEXリストの下端とカウンターの上端が近づいたらフェード
+                    const distance = counterRect.top - navRect.bottom;
+                    
+                    if (distance < 20) { // 20px以内に近づいたら
+                        visitorCounter.classList.add('faded');
+                    } else {
+                        visitorCounter.classList.remove('faded');
+                    }
+                };
+
+                // スクロールイベントとリサイズイベントを監視
+                window.addEventListener('scroll', checkOverlap);
+                window.addEventListener('resize', checkOverlap);
+                
+                // 初期チェック
+                setTimeout(checkOverlap, 100);
+            }
+        }
 
         // URLを検出してリンク化する関数
         function linkifyText(text) {
@@ -232,6 +361,9 @@
 
         // 実行
         fetchAndBuild();
+        
+        // 来場者カウンターを初期化
+        new VisitorCounter();
     </script>
 </body>
 </html>

@@ -131,7 +131,6 @@
 
         /* --- 来場者カウンター --- */
         #visitor-counter {
-            margin-top: 30px;
             padding: 15px;
             background-color: rgba(255, 255, 255, 0.4);
             border-radius: 15px;
@@ -172,7 +171,7 @@
         <div id="nav-list"></div>
         
         <!-- 来場者カウンター -->
-        <div id="visitor-counter">
+        <div id="visitor-counter" style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
             <div class="counter-label">来場者数</div>
             <div class="counter-number" id="counter-display">
                 <span class="counter-loading">読み込み中...</span>
@@ -189,16 +188,15 @@
     <script>
         const filePath = "./context.txt";
 
-        // Firebase初期化
+        // Firebase初期化（ユーザーが設定を追加する必要あり）
         const firebaseConfig = {
-            apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
-            authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
-            databaseURL: "https://tanuki-nu-vrc-profile-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "tanuki-nu-vrc-profile",
-            storageBucket: "tanuki-nu-vrc-profile.firebasestorage.app",
-            messagingSenderId: "751669057525",
-            appId: "1:751669057525:web:cf65d84fdcd2a4416d32bc",
-            measurementId: "G-L7JBGHCZ1E"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         // Firebase初期化

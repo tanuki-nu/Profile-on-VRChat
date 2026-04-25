@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>たぬきーぬのプロフィール</title>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -156,7 +155,6 @@
     <nav id="nav-sidebar">
         <div style="font-weight: bold; margin-bottom: 30px; letter-spacing: 2px; color: #2c3e50; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">INDEX</div>
         <div id="nav-list"></div>
-        <!-- 来場者カウンター -->
         <div id="visitor-counter" style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
             <div class="counter-label">来場者数</div>
             <div class="counter-number" id="counter-display">
@@ -185,7 +183,8 @@
         // Firebase初期化
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        // 来場者カウンター機能
+        
+        // --- 来場者カウンター機能 ---
         class VisitorCounter {
             constructor() {
                 this.counterRef = database.ref('visitor_count');
@@ -193,7 +192,6 @@
                 this.init();
             }
             async init() {
-                // セッションチェック（同じセッションでの重複カウントを防ぐ）
                 if (!sessionStorage.getItem(this.sessionKey)) {
                     await this.incrementCounter();
                     sessionStorage.setItem(this.sessionKey, 'true');
@@ -221,31 +219,51 @@
                 });
             }
             setupScrollListener() {
-                const navSidebar = document.getElementById('nav-sidebar');
                 const visitorCounter = document.getElementById('visitor-counter');
                 const navList = document.getElementById('nav-list');
                 const checkOverlap = () => {
                     const navRect = navList.getBoundingClientRect();
                     const counterRect = visitorCounter.getBoundingClientRect();
-                    // INDEXリストの下端とカウンターの上端が近づいたらフェード
                     const distance = counterRect.top - navRect.bottom;
-                    
-                    if (distance < 20) { // 20px以内に近づいたら
+                    if (distance < 20) {
                         visitorCounter.classList.add('faded');
                     } else {
                         visitorCounter.classList.remove('faded');
                     }
                 };
-                // スクロールイベントとリサイズイベントを監視
                 window.addEventListener('scroll', checkOverlap);
                 window.addEventListener('resize', checkOverlap);
-                // 初期チェック
                 setTimeout(checkOverlap, 100);
             }
         }
+
+        // --- 無操作キック機能 (追加部分) ---
+        class InactivityKick {
+            constructor(timeoutMinutes, redirectUrl) {
+                this.timeoutMs = timeoutMinutes * 60 * 1000;
+                this.redirectUrl = redirectUrl;
+                this.timer = null;
+                this.init();
+            }
+            init() {
+                // 操作を検知するイベント
+                const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+                events.forEach(event => {
+                    document.addEventListener(event, () => this.resetTimer(), true);
+                });
+                this.resetTimer();
+                console.log("Inactivity timer started: " + (this.timeoutMs / 60000) + " minutes.");
+            }
+            resetTimer() {
+                clearTimeout(this.timer);
+                this.timer = setTimeout(() => {
+                    window.location.href = this.redirectUrl;
+                }, this.timeoutMs);
+            }
+        }
+
         // URLを検出してリンク化する関数
         function linkifyText(text) {
-            // URLパターン（http, https, ftp）
             const urlPattern = /(https?:\/\/[^\s]+|ftp:\/\/[^\s]+)/g;
             const parts = text.split(urlPattern);
             const container = document.createElement('span');
@@ -263,11 +281,11 @@
             });
             return container.childNodes;
         }
-        async function fetchAndBuild() {
+
+        async fetchAndBuild() {
             const container = document.getElementById('text-target');
             const navList = document.getElementById('nav-list');
             try {
-                // キャッシュ対策: URLの末尾に現在の時間を付けて、常に「新しいリクエスト」として送る
                 const cacheBuster = `?t=${new Date().getTime()}`;
                 const response = await fetch(filePath + cacheBuster, {
                     cache: "no-store"
@@ -275,12 +293,10 @@
 
                 if (!response.ok) throw new Error('File not found');
                 const rawText = await response.text();
-                // 画面をリセット
                 container.innerHTML = "";
-                container.className = ""; // loadingクラスを削除
+                container.className = ""; 
                 navList.innerHTML = "";
 
-                // 《 》で文章を分割
                 const sections = rawText.split(/(《[^》]+》)/g);
                 let sectionCount = 0;
 
@@ -290,14 +306,12 @@
                         const titleText = part.replace(/[《》]/g, '');
                         const sectionId = `section-${sectionCount}`;
 
-                        // 1. 本文側の見出し（アンカー先）
                         const h = document.createElement('span');
                         h.className = 'section-title';
                         h.id = sectionId;
                         h.textContent = titleText;
                         container.appendChild(h);
 
-                        // 2. 目次アイテム
                         const navItem = document.createElement('a');
                         navItem.className = 'nav-item';
                         navItem.textContent = titleText;
@@ -305,15 +319,12 @@
                         navList.appendChild(navItem);
 
                     } else if (part.trim() !== "") {
-                        // 本文
                         const p = document.createElement('span');
                         p.className = 'section-text';
-                        // テキストをリンク化
                         const nodes = linkifyText(part.trim());
                         nodes.forEach(node => {
                             p.appendChild(node.cloneNode(true));
                         });
-                        
                         container.appendChild(p);
                     }
                 });
@@ -323,10 +334,13 @@
                 console.error(err);
             }
         }
+
         // 実行
         fetchAndBuild();
         // 来場者カウンターを初期化
         new VisitorCounter();
+        // 無操作キックを初期化 (60分, あなたのXへ)
+        new InactivityKick(60, "https://x.com/tanukiinu_vrc");
     </script>
 </body>
 </html>

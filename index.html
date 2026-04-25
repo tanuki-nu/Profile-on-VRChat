@@ -12,11 +12,11 @@
             background-color: #C8C8BE;
             margin: 0;
             display: flex;
-            justify-content: flex-start; /* 左側に目次を置くため */
+            justify-content: flex-start;
             align-items: flex-start;
             min-height: 100vh;
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            scroll-behavior: smooth; /* スムーズにジャンプさせる */
+            scroll-behavior: smooth;
         }
 
         /* --- 目次（左側固定） --- */
@@ -27,7 +27,7 @@
             left: 0;
             top: 0;
             padding: 40px 20px;
-            background-color: rgba(255, 255, 255, 0.3); /* ダイアログより薄い透過 */
+            background-color: rgba(255, 255, 255, 0.3);
             border-right: 1px solid rgba(255, 255, 255, 0.2);
             overflow-y: auto;
             backdrop-filter: blur(5px);
@@ -53,14 +53,14 @@
             cursor: pointer;
             background-color: rgba(255, 255, 255, 0.1);
         }
-
         .nav-item:hover {
             background-color: rgba(255, 255, 255, 0.6);
             transform: translateX(5px);
         }
+
         /* --- メインコンテンツ --- */
         #main-wrapper {
-            margin-left: 250px; /* 目次の幅 */
+            margin-left: 250px;
             flex-grow: 1;
             display: flex;
             justify-content: center;
@@ -71,29 +71,26 @@
             width: 100%;
             max-width: 750px;
             padding: 60px;
-            background-color: rgba(255, 255, 255, 0.6); /* 透過度60% */
-            border-radius: 40px; /* 丸ぶち */
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 40px;
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-sizing: border-box;
         }
-        /* タイトルと段落のスタイル */
+
         .section-title {
             display: block;
             font-weight: bold;
             font-size: 1.8rem;
             margin: 50px 0 20px 0;
             color: #2c3e50;
-            scroll-margin-top: 60px; /* ジャンプ時の余白 */
+            scroll-margin-top: 60px;
             border-left: 5px solid #2c3e50;
             padding-left: 15px;
-            font-style: normal; /* 明示的に通常表示 */
         }
-
         .section-title:first-child { margin-top: 0; }
-
         .section-text {
             display: block;
             white-space: pre-wrap;
@@ -102,23 +99,17 @@
             margin-bottom: 40px;
             font-size: 1.05rem;
             text-align: justify;
-            font-style: normal; /* 明示的に通常表示 */
         }
-        /* リンクのスタイル */
         .section-text a {
             color: #0066cc;
             text-decoration: underline;
-            cursor: pointer;
         }
-        .section-text a:hover {
-            color: #0052a3;
-        }
-        /* 読み込み中表示 */
         .loading {
             text-align: center;
             color: #777;
             font-style: italic;
         }
+
         /* --- 来場者カウンター --- */
         #visitor-counter {
             padding: 15px;
@@ -128,27 +119,9 @@
             transition: opacity 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-
-        #visitor-counter.faded {
-            opacity: 0.3;
-        }
-        .counter-label {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .counter-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #2c3e50;
-            font-family: 'Courier New', monospace;
-        }
-        .counter-loading {
-            font-size: 0.9rem;
-            color: #999;
-            font-style: italic;
-        }
+        #visitor-counter.faded { opacity: 0.3; }
+        .counter-label { font-size: 0.8rem; color: #666; margin-bottom: 5px; }
+        .counter-number { font-size: 1.5rem; font-weight: bold; color: #2c3e50; font-family: 'Courier New', monospace; }
     </style>
 </head>
 <body>
@@ -158,7 +131,7 @@
         <div id="visitor-counter" style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
             <div class="counter-label">来場者数</div>
             <div class="counter-number" id="counter-display">
-                <span class="counter-loading">読み込み中...</span>
+                <span style="font-size: 0.9rem; color: #999;">読み込み中...</span>
             </div>
         </div>
     </nav>
@@ -167,9 +140,11 @@
             <div id="text-target" class="loading">最新のデータを取得中...</div>
         </div>
     </div>
+
     <script>
         const filePath = "./context.txt";
-        // Firebase初期化
+        
+        // Firebase設定
         const firebaseConfig = {
             apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
             authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
@@ -180,11 +155,10 @@
             appId: "1:751669057525:web:cf65d84fdcd2a4416d32bc",
             measurementId: "G-L7JBGHCZ1E"
         };
-        // Firebase初期化
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        
-        // --- 来場者カウンター機能 ---
+
+        // --- 来場者カウンター ---
         class VisitorCounter {
             constructor() {
                 this.counterRef = database.ref('visitor_count');
@@ -201,21 +175,13 @@
             }
             async incrementCounter() {
                 try {
-                    await this.counterRef.transaction((currentCount) => {
-                        return (currentCount || 0) + 1;
-                    });
-                } catch (error) {
-                    console.error('カウンター更新エラー:', error);
-                }
+                    await this.counterRef.transaction(c => (c || 0) + 1);
+                } catch (e) { console.error('Counter Error:', e); }
             }
             displayCounter() {
                 const display = document.getElementById('counter-display');
-                this.counterRef.on('value', (snapshot) => {
-                    const count = snapshot.val() || 0;
-                    display.innerHTML = count.toLocaleString();
-                }, (error) => {
-                    console.error('カウンター読み取りエラー:', error);
-                    display.innerHTML = 'エラー';
+                this.counterRef.on('value', snap => {
+                    display.innerHTML = (snap.val() || 0).toLocaleString();
                 });
             }
             setupScrollListener() {
@@ -224,8 +190,7 @@
                 const checkOverlap = () => {
                     const navRect = navList.getBoundingClientRect();
                     const counterRect = visitorCounter.getBoundingClientRect();
-                    const distance = counterRect.top - navRect.bottom;
-                    if (distance < 20) {
+                    if (counterRect.top - navRect.bottom < 20) {
                         visitorCounter.classList.add('faded');
                     } else {
                         visitorCounter.classList.remove('faded');
@@ -233,47 +198,41 @@
                 };
                 window.addEventListener('scroll', checkOverlap);
                 window.addEventListener('resize', checkOverlap);
-                setTimeout(checkOverlap, 100);
             }
         }
 
-        // --- 無操作キック機能 (追加部分) ---
+        // --- 無操作キック機能 (20分 / 0.5% 確率分岐) ---
         class InactivityKick {
-            constructor(timeoutMinutes, redirectUrl) {
+            constructor(timeoutMinutes, defaultUrl, rareUrl) {
                 this.timeoutMs = timeoutMinutes * 60 * 1000;
-                this.redirectUrl = redirectUrl;
+                this.defaultUrl = defaultUrl;
+                this.rareUrl = rareUrl;
                 this.timer = null;
                 this.init();
             }
             init() {
-                // 操作を検知するイベント
                 const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-                events.forEach(event => {
-                    document.addEventListener(event, () => this.resetTimer(), true);
-                });
+                events.forEach(e => document.addEventListener(e, () => this.resetTimer(), true));
                 this.resetTimer();
-                console.log("Inactivity timer started: " + (this.timeoutMs / 60000) + " minutes.");
             }
             resetTimer() {
                 clearTimeout(this.timer);
                 this.timer = setTimeout(() => {
-                    window.location.href = this.redirectUrl;
+                    // 0.5%の確率でVRChat、それ以外はX
+                    const isRare = Math.random() < 0.005; 
+                    window.location.href = isRare ? this.rareUrl : this.defaultUrl;
                 }, this.timeoutMs);
             }
         }
 
-        // URLを検出してリンク化する関数
+        // --- テキスト取得 & ビルド ---
         function linkifyText(text) {
             const urlPattern = /(https?:\/\/[^\s]+|ftp:\/\/[^\s]+)/g;
-            const parts = text.split(urlPattern);
             const container = document.createElement('span');
-            parts.forEach(part => {
-                if (part && (part.startsWith('http://') || part.startsWith('https://') || part.startsWith('ftp://'))) {
+            text.split(urlPattern).forEach(part => {
+                if (part && (part.startsWith('http') || part.startsWith('ftp'))) {
                     const a = document.createElement('a');
-                    a.href = part;
-                    a.textContent = part;
-                    a.target = '_blank';
-                    a.rel = 'noopener noreferrer';
+                    a.href = part; a.textContent = part; a.target = '_blank'; a.rel = 'noopener noreferrer';
                     container.appendChild(a);
                 } else {
                     container.appendChild(document.createTextNode(part));
@@ -282,65 +241,47 @@
             return container.childNodes;
         }
 
-        async fetchAndBuild() {
+        async function fetchAndBuild() {
             const container = document.getElementById('text-target');
             const navList = document.getElementById('nav-list');
             try {
-                const cacheBuster = `?t=${new Date().getTime()}`;
-                const response = await fetch(filePath + cacheBuster, {
-                    cache: "no-store"
-                });
-
-                if (!response.ok) throw new Error('File not found');
+                const response = await fetch(filePath + `?t=${new Date().getTime()}`, { cache: "no-store" });
+                if (!response.ok) throw new Error();
                 const rawText = await response.text();
-                container.innerHTML = "";
-                container.className = ""; 
-                navList.innerHTML = "";
+                container.innerHTML = ""; container.className = ""; navList.innerHTML = "";
 
-                const sections = rawText.split(/(《[^》]+》)/g);
                 let sectionCount = 0;
-
-                sections.forEach(part => {
+                rawText.split(/(《[^》]+》)/g).forEach(part => {
                     if (part.startsWith('《') && part.endsWith('》')) {
                         sectionCount++;
-                        const titleText = part.replace(/[《》]/g, '');
-                        const sectionId = `section-${sectionCount}`;
-
+                        const title = part.replace(/[《》]/g, '');
+                        const id = `section-${sectionCount}`;
                         const h = document.createElement('span');
-                        h.className = 'section-title';
-                        h.id = sectionId;
-                        h.textContent = titleText;
+                        h.className = 'section-title'; h.id = id; h.textContent = title;
                         container.appendChild(h);
-
-                        const navItem = document.createElement('a');
-                        navItem.className = 'nav-item';
-                        navItem.textContent = titleText;
-                        navItem.href = `#${sectionId}`;
-                        navList.appendChild(navItem);
-
+                        const nav = document.createElement('a');
+                        nav.className = 'nav-item'; nav.textContent = title; nav.href = `#${id}`;
+                        navList.appendChild(nav);
                     } else if (part.trim() !== "") {
                         const p = document.createElement('span');
                         p.className = 'section-text';
-                        const nodes = linkifyText(part.trim());
-                        nodes.forEach(node => {
-                            p.appendChild(node.cloneNode(true));
-                        });
+                        linkifyText(part.trim()).forEach(node => p.appendChild(node.cloneNode(true)));
                         container.appendChild(p);
                     }
                 });
-
             } catch (err) {
-                container.innerHTML = `<div style="color:red;">データの取得に失敗しました。<br>リポジトリに context.txt が存在するか確認してください。</div>`;
-                console.error(err);
+                container.innerHTML = `<div style="color:red;">データの取得失敗</div>`;
             }
         }
 
-        // 実行
+        // --- 実行 ---
         fetchAndBuild();
-        // 来場者カウンターを初期化
         new VisitorCounter();
-        // 無操作キックを初期化 (60分, あなたのXへ)
-        new InactivityKick(60, "https://x.com/tanukiinu_vrc");
+        new InactivityKick(
+            20, 
+            "https://x.com/tanukiinu_vrc", 
+            "https://vrchat.com/home/user/usr_79be366a-9b5f-4b25-818f-af90d0f42c99"
+        );
     </script>
 </body>
 </html>

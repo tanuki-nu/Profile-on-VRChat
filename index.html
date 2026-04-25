@@ -35,7 +35,6 @@
             -webkit-backdrop-filter: blur(5px);
             box-sizing: border-box;
         }
-
         #nav-sidebar::-webkit-scrollbar {
             width: 5px;
         }
@@ -43,7 +42,6 @@
             background: rgba(0,0,0,0.1);
             border-radius: 10px;
         }
-
         .nav-item {
             display: block;
             padding: 12px 15px;
@@ -61,7 +59,6 @@
             background-color: rgba(255, 255, 255, 0.6);
             transform: translateX(5px);
         }
-
         /* --- メインコンテンツ --- */
         #main-wrapper {
             margin-left: 250px; /* 目次の幅 */
@@ -71,7 +68,6 @@
             padding: 40px;
             box-sizing: border-box;
         }
-
         #content-box {
             width: 100%;
             max-width: 750px;
@@ -84,7 +80,6 @@
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-sizing: border-box;
         }
-
         /* タイトルと段落のスタイル */
         .section-title {
             display: block;
@@ -110,25 +105,21 @@
             text-align: justify;
             font-style: normal; /* 明示的に通常表示 */
         }
-
         /* リンクのスタイル */
         .section-text a {
             color: #0066cc;
             text-decoration: underline;
             cursor: pointer;
         }
-
         .section-text a:hover {
             color: #0052a3;
         }
-
         /* 読み込み中表示 */
         .loading {
             text-align: center;
             color: #777;
             font-style: italic;
         }
-
         /* --- 来場者カウンター --- */
         #visitor-counter {
             padding: 15px;
@@ -142,21 +133,18 @@
         #visitor-counter.faded {
             opacity: 0.3;
         }
-
         .counter-label {
             font-size: 0.8rem;
             color: #666;
             margin-bottom: 5px;
             font-weight: 500;
         }
-
         .counter-number {
             font-size: 1.5rem;
             font-weight: bold;
             color: #2c3e50;
             font-family: 'Courier New', monospace;
         }
-
         .counter-loading {
             font-size: 0.9rem;
             color: #999;
@@ -165,11 +153,9 @@
     </style>
 </head>
 <body>
-
     <nav id="nav-sidebar">
         <div style="font-weight: bold; margin-bottom: 30px; letter-spacing: 2px; color: #2c3e50; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">INDEX</div>
         <div id="nav-list"></div>
-        
         <!-- 来場者カウンター -->
         <div id="visitor-counter" style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
             <div class="counter-label">来場者数</div>
@@ -178,31 +164,27 @@
             </div>
         </div>
     </nav>
-
     <div id="main-wrapper">
         <div id="content-box">
             <div id="text-target" class="loading">最新のデータを取得中...</div>
         </div>
     </div>
-
     <script>
         const filePath = "./context.txt";
-
-        // Firebase初期化（ユーザーが設定を追加する必要あり）
+        // Firebase初期化
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
+            authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
+            databaseURL: "https://tanuki-nu-vrc-profile-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tanuki-nu-vrc-profile",
+            storageBucket: "tanuki-nu-vrc-profile.firebasestorage.app",
+            messagingSenderId: "751669057525",
+            appId: "1:751669057525:web:cf65d84fdcd2a4416d32bc",
+            measurementId: "G-L7JBGHCZ1E"
         };
-
         // Firebase初期化
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
         // 来場者カウンター機能
         class VisitorCounter {
             constructor() {
@@ -210,7 +192,6 @@
                 this.sessionKey = 'visitor_session';
                 this.init();
             }
-
             async init() {
                 // セッションチェック（同じセッションでの重複カウントを防ぐ）
                 if (!sessionStorage.getItem(this.sessionKey)) {
@@ -220,7 +201,6 @@
                 this.displayCounter();
                 this.setupScrollListener();
             }
-
             async incrementCounter() {
                 try {
                     await this.counterRef.transaction((currentCount) => {
@@ -230,10 +210,8 @@
                     console.error('カウンター更新エラー:', error);
                 }
             }
-
             displayCounter() {
                 const display = document.getElementById('counter-display');
-                
                 this.counterRef.on('value', (snapshot) => {
                     const count = snapshot.val() || 0;
                     display.innerHTML = count.toLocaleString();
@@ -242,16 +220,13 @@
                     display.innerHTML = 'エラー';
                 });
             }
-
             setupScrollListener() {
                 const navSidebar = document.getElementById('nav-sidebar');
                 const visitorCounter = document.getElementById('visitor-counter');
                 const navList = document.getElementById('nav-list');
-                
                 const checkOverlap = () => {
                     const navRect = navList.getBoundingClientRect();
                     const counterRect = visitorCounter.getBoundingClientRect();
-                    
                     // INDEXリストの下端とカウンターの上端が近づいたらフェード
                     const distance = counterRect.top - navRect.bottom;
                     
@@ -261,22 +236,18 @@
                         visitorCounter.classList.remove('faded');
                     }
                 };
-
                 // スクロールイベントとリサイズイベントを監視
                 window.addEventListener('scroll', checkOverlap);
                 window.addEventListener('resize', checkOverlap);
-                
                 // 初期チェック
                 setTimeout(checkOverlap, 100);
             }
         }
-
         // URLを検出してリンク化する関数
         function linkifyText(text) {
             // URLパターン（http, https, ftp）
             const urlPattern = /(https?:\/\/[^\s]+|ftp:\/\/[^\s]+)/g;
             const parts = text.split(urlPattern);
-            
             const container = document.createElement('span');
             parts.forEach(part => {
                 if (part && (part.startsWith('http://') || part.startsWith('https://') || part.startsWith('ftp://'))) {
@@ -290,14 +261,11 @@
                     container.appendChild(document.createTextNode(part));
                 }
             });
-            
             return container.childNodes;
         }
-
         async function fetchAndBuild() {
             const container = document.getElementById('text-target');
             const navList = document.getElementById('nav-list');
-            
             try {
                 // キャッシュ対策: URLの末尾に現在の時間を付けて、常に「新しいリクエスト」として送る
                 const cacheBuster = `?t=${new Date().getTime()}`;
@@ -307,7 +275,6 @@
 
                 if (!response.ok) throw new Error('File not found');
                 const rawText = await response.text();
-
                 // 画面をリセット
                 container.innerHTML = "";
                 container.className = ""; // loadingクラスを削除
@@ -341,7 +308,6 @@
                         // 本文
                         const p = document.createElement('span');
                         p.className = 'section-text';
-                        
                         // テキストをリンク化
                         const nodes = linkifyText(part.trim());
                         nodes.forEach(node => {
@@ -357,10 +323,8 @@
                 console.error(err);
             }
         }
-
         // 実行
         fetchAndBuild();
-        
         // 来場者カウンターを初期化
         new VisitorCounter();
     </script>

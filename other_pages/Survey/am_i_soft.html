@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>日次アンケート — test</title>
-  <meta name="description" content="1日1回回答できるY/Nアンケート（Firebase Realtime Databaseへ保存）" />
+  <meta name="description" content="1日1回回答できるはい/いいえアンケート（Firebase Realtime Databaseへ保存）" />
   <style>
     :root{
       --yes:#2ea44f;
@@ -16,13 +16,8 @@
       --bar-bg: rgba(0,0,0,0.06);
     }
     html,body{height:100%;margin:0}
-    /* 背景画像（Google Drive 共有ファイルを直接表示） */
     body{
       font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-      background-image: url("https://drive.google.com/uc?export=view&id=1-NmBAe6kjyl-IGru9IiA_gMiBKYcaITe");
-      background-position: center top;
-      background-repeat: no-repeat;
-      background-size: cover; /* 横幅が画面端にちょうど届くように拡大 */
       min-height:100vh;
       display:flex;
       align-items:center;
@@ -30,6 +25,10 @@
       padding:28px;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
+      background-color: #f2f4f6; /* フォールバック色 */
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-size: cover;
     }
 
     .card {
@@ -130,35 +129,34 @@
 </head>
 <body>
   <main class="card" role="main" aria-labelledby="qTitle">
-    <h1 id="qTitle">彼はふにゃオスですか？</h1>
+    <h1 id="qTitle">test</h1>
     <div class="question" aria-hidden="true">test</div>
 
     <div class="controls" role="group" aria-label="回答">
-      <button id="btnYes" class="btn btn-yes" aria-pressed="false" aria-label="はい">Y</button>
-      <button id="btnNo"  class="btn btn-no"  aria-pressed="false" aria-label="いいえ">N</button>
+      <button id="btnYes" class="btn btn-yes" aria-pressed="false" aria-label="はい">はい</button>
+      <button id="btnNo"  class="btn btn-no"  aria-pressed="false" aria-label="いいえ">いいえ</button>
     </div>
 
     <div class="counts" aria-live="polite">
-      <div>Y: <span id="countY">0</span></div>
-      <div>N: <span id="countN">0</span></div>
+      <div>はい: <span id="countY">0</span></div>
+      <div>いいえ: <span id="countN">0</span></div>
       <div>合計: <span id="countTotal">0</span></div>
     </div>
 
-    <div class="bar-wrap" aria-hidden="false" aria-label="Y と N の比率">
-      <!-- 幅は JS で制御 -->
+    <div class="bar-wrap" aria-hidden="false" aria-label="はい と いいえ の比率">
       <div id="barYes" class="bar-yes" style="width:50%">
-        <span class="bar-label" id="barYesLabel">Y 50%</span>
+        <span class="bar-label" id="barYesLabel">はい 50% (0)</span>
       </div>
       <div id="barNo" class="bar-no" style="width:50%">
-        <span class="bar-label" id="barNoLabel">N 50%</span>
+        <span class="bar-label" id="barNoLabel">いいえ 50% (0)</span>
       </div>
     </div>
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
 
-    <div class="note">1日につき1回だけ回答できます。保存形式: <code>soft_dayvote_y</code> と <code>soft_dayvote_n</code>（Realtime DB）。</div>
+    <div class="note">1日につき1回だけ回答できます。</div>
 
-    <div class="footer">データ保存先: Firebase Realtime Database</div>
+    <div class="footer">Made by たぬきーぬ</div>
   </main>
 
   <script>
@@ -207,6 +205,24 @@
       });
     }
 
+    // 背景画像の読み込み検査と設定（Drive 共有画像）
+    (function ensureBackground(){
+      const imgUrl = "https://drive.google.com/uc?export=view&id=1-NmBAe6kjyl-IGru9IiA_gMiBKYcaITe";
+      const img = new Image();
+      img.onload = function(){
+        // 読み込み成功したら body の背景に設定
+        document.body.style.backgroundImage = `url("${imgUrl}")`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center top';
+      };
+      img.onerror = function(){
+        // フォールバック: グラデーションにする
+        document.body.style.backgroundImage = 'linear-gradient(180deg,#eef2f6 0%, #f8fafc 100%)';
+        document.body.style.backgroundSize = 'auto';
+      };
+      img.src = imgUrl;
+    })();
+
     // 初期化
     (async function init(){
       try {
@@ -218,7 +234,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 保存形式: soft_dayvote_y, soft_dayvote_n (ルート直下)
+        // 保存形式: /soft_dayvote_y と /soft_dayvote_n
         const refY = db.ref('/soft_dayvote_y');
         const refN = db.ref('/soft_dayvote_n');
 
@@ -226,26 +242,27 @@
         const alreadyVoted = !!localStorage.getItem(localVoteKey);
         setButtonsEnabled(!alreadyVoted);
 
+        // 最新値を保持
+        let latestY = 0;
+        let latestN = 0;
+
         // リアルタイムで値を監視
         refY.on('value', snapshot => {
           const y = snapshot.val();
-          updateCounts((typeof y === 'number') ? y : 0, null);
+          latestY = (typeof y === 'number') ? y : 0;
+          updateCounts();
         });
         refN.on('value', snapshot => {
           const n = snapshot.val();
-          updateCounts(null, (typeof n === 'number') ? n : 0);
+          latestN = (typeof n === 'number') ? n : 0;
+          updateCounts();
         });
 
         // ボタンイベント
         btnYes.addEventListener('click', () => handleVote('y'));
         btnNo.addEventListener('click', () => handleVote('n'));
 
-        // 内部保持（最新の値）
-        let latestY = 0;
-        let latestN = 0;
-        function updateCounts(y, n){
-          if (typeof y === 'number') latestY = y;
-          if (typeof n === 'number') latestN = n;
+        function updateCounts(){
           const total = Math.max(0, latestY + latestN);
           countYEl.textContent = latestY;
           countNEl.textContent = latestN;
@@ -253,19 +270,17 @@
           updateBars(latestY, latestN);
         }
 
-        // バー更新
         function updateBars(y, n){
-          const total = Math.max(1, y + n); // 0除算防止のため最小1
+          const total = Math.max(1, y + n); // 0除算防止
           const pY = Math.round((y / total) * 100);
           const pN = 100 - pY;
-          // 幅をパーセンテージで設定
           barYes.style.width = pY + '%';
           barNo.style.width = pN + '%';
-          barYesLabel.textContent = `Y ${pY}% (${y})`;
-          barNoLabel.textContent = `N ${pN}% (${n})`;
+          barYesLabel.textContent = `はい ${pY}% (${y})`;
+          barNoLabel.textContent = `いいえ ${pN}% (${n})`;
         }
 
-        // 投票処理: Y は soft_dayvote_y を +1、N は soft_dayvote_n を +1
+        // 投票処理
         async function handleVote(choice){
           if (localStorage.getItem(localVoteKey)) {
             statusEl.textContent = '本日は既に投票済みです。';
@@ -306,7 +321,7 @@
               timestamp: new Date().toISOString()
             }));
 
-            statusEl.textContent = (choice === 'y') ? 'はい を受け付けました。' : 'いいえ を受け付けました。';
+            statusEl.textContent = (choice === 'y') ? '「はい」を受け付けました。' : '「いいえ」を受け付けました。';
             if (choice === 'y') btnYes.setAttribute('aria-pressed','true'); else btnNo.setAttribute('aria-pressed','true');
           } catch (err) {
             console.error(err);
@@ -315,7 +330,6 @@
           }
         }
 
-        // ボタンの有効/無効切替
         function setButtonsEnabled(enabled){
           btnYes.disabled = !enabled;
           btnNo.disabled  = !enabled;
@@ -331,10 +345,10 @@
         // 初期ステータス表示
         if (alreadyVoted) {
           const info = JSON.parse(localStorage.getItem(localVoteKey) || 'null');
-          const sign = info && info.choice === 'y' ? 'Y' : 'N';
+          const sign = info && info.choice === 'y' ? 'はい' : 'いいえ';
           statusEl.textContent = `本日は既に投票済み（${sign}）。次回は ${getNextDateString()} に投票できます。`;
         } else {
-          statusEl.textContent = '本日まだ投票していません。はい または いいえ を選択してください。';
+          statusEl.textContent = '本日まだ投票していません。「はい」または「いいえ」を選択してください。';
         }
 
         function getNextDateString(){

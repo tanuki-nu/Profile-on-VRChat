@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Survey Page</title>
+  <title>Dashboard</title>
   <style>
     html, body {
       margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
-      display: flex; justify-content: center; align-items: center;
+      font-family: sans-serif;
     }
     .bg-image {
       position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -15,16 +15,25 @@
       background-position: center; background-repeat: no-repeat; background-size: cover;
       background-color: #000; filter: blur(2px); transform: scale(1.02); z-index: -1;
     }
+    /* Top Bar */
+    .top-bar {
+      position: fixed; top: 0; width: 100%; height: 50px;
+      background: rgba(0, 0, 0, 0.5); color: white;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; box-sizing: border-box; z-index: 100;
+    }
+    .top-bar a { color: white; text-decoration: none; margin-left: 15px; font-size: 0.9rem; }
+    /* Main Content */
+    .main-content {
+      display: flex; justify-content: center; align-items: center; height: 100vh;
+    }
     .center-box {
-      width: 50%; /* 少しコンパクトに */
-      height: auto; /* 内容に合わせて高さ調整 */
-      min-height: 400px;
+      width: 50%; min-height: 400px;
       background-color: rgba(255, 255, 255, 0.4);
       border-radius: 30px; backdrop-filter: blur(5px);
       border: 2px solid rgba(255, 255, 255, 0.3);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; /* 余白を削りました */
-      gap: 10px; /* 要素の間隔を詰めました */
+      padding: 20px; gap: 10px;
     }
     .test-text { font-size: 2.5rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); }
     .sub-text { font-size: 0.9rem; color: rgba(0, 0, 0, 0.6); }
@@ -42,27 +51,62 @@
 </head>
 <body>
   <div class="bg-image"></div>
-  <div class="center-box">
-    <div class="test-text">test</div>
-    <div class="sub-text">by test</div>
-    <div class="btn-container">
-      <button onclick="vote('soft_survey_y')">はい</button>
-      <button onclick="vote('soft_survey_n')">いいえ</button>
-    </div>
-    <div class="bar-wrapper">
-      <div class="bar-container">
-        <div id="bar-y" class="bar-y" style="width: 50%;">はい(50%)</div>
-        <div id="bar-n" class="bar-n" style="width: 50%;">いいえ(50%)</div>
+  
+  <div class="top-bar">
+    <div><span id="dayDate"></span> <span id="time"></span></div>
+    <div id="linksContainer"></div>
+  </div>
+
+  <div class="main-content">
+    <div class="center-box">
+      <div class="test-text">test</div>
+      <div class="sub-text">by test</div>
+      <div class="btn-container">
+        <button onclick="vote('soft_survey_y')">はい</button>
+        <button onclick="vote('soft_survey_n')">いいえ</button>
       </div>
+      <div class="bar-wrapper">
+        <div class="bar-container">
+          <div id="bar-y" class="bar-y" style="width: 50%;">はい(50%)</div>
+          <div id="bar-n" class="bar-n" style="width: 50%;">いいえ(50%)</div>
+        </div>
+      </div>
+      <div id="status" class="timer-text"></div>
     </div>
-    <div id="status" class="timer-text"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
     
-    // 省略：Firebase設定・投票ロジック（前回の内容と共通）
+    // Top Bar Logic
+    async function loadLinksFile() {
+      try {
+        const response = await fetch('links.txt');
+        if (!response.ok) return;
+        const text = await response.text();
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+        const linksContainer = document.getElementById('linksContainer');
+        for (let i = 0; i < lines.length; ) {
+          const buttonMatch = lines[i].match(/~([^~]+)~/);
+          const linkMatch = (i+1 < lines.length) ? lines[i+1].match(/=([^=]+)=/) : null;
+          if (buttonMatch && linkMatch) {
+            const a = document.createElement('a');
+            a.href = linkMatch[1]; a.target = '_blank'; a.textContent = buttonMatch[1];
+            linksContainer.appendChild(a);
+            i += 2;
+          } else i++;
+        }
+      } catch (err) { console.error(err); }
+    }
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString('ja-JP');
+      document.getElementById('dayDate').textContent = (now.getMonth()+1) + "/" + now.getDate();
+    }, 1000);
+    loadLinksFile();
+
+    // Firebase Logic
     const db = getDatabase(initializeApp({
       apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
       authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
@@ -81,14 +125,10 @@
       const total = y + n || 1;
       const yPercent = Math.round(y / total * 100);
       const nPercent = Math.round(n / total * 100);
-      
-      const barY = document.getElementById('bar-y');
-      const barN = document.getElementById('bar-n');
-      
-      barY.style.width = yPercent + "%";
-      barY.innerText = yPercent > 10 ? "はい(" + yPercent + "%)" : "";
-      barN.style.width = nPercent + "%";
-      barN.innerText = nPercent > 10 ? "いいえ(" + nPercent + "%)" : "";
+      document.getElementById('bar-y').style.width = yPercent + "%";
+      document.getElementById('bar-y').innerText = yPercent > 10 ? "はい(" + yPercent + "%)" : "";
+      document.getElementById('bar-n').style.width = nPercent + "%";
+      document.getElementById('bar-n').innerText = nPercent > 10 ? "いいえ(" + nPercent + "%)" : "";
     });
 
     window.vote = function(path) {
@@ -99,24 +139,6 @@
         localStorage.setItem('lastVote', now);
       });
     };
-
-    setInterval(() => {
-      const lastVote = localStorage.getItem('lastVote');
-      const status = document.getElementById('status');
-      if (lastVote) {
-        const remaining = 86400000 - (new Date().getTime() - lastVote);
-        if (remaining > 0) {
-          const h = Math.floor(remaining / 3600000);
-          const m = Math.floor((remaining % 3600000) / 60000);
-          const s = Math.floor((remaining % 60000) / 1000);
-          status.innerText = `次の投票は ${h}:${m}:${s} 後に可能です`;
-        } else {
-          status.innerText = "投票可能です";
-        }
-      } else {
-        status.innerText = "投票可能です";
-      }
-    }, 1000);
   </script>
 </body>
 </html>

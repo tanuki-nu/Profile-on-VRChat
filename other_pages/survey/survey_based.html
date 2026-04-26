@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Soft Background</title>
+  <title>Overlay Box</title>
   <style>
     html, body {
       margin: 0;
@@ -13,6 +13,7 @@
       overflow: hidden;
     }
 
+    /* 背景画像エリア */
     .bg-image {
       width: 100vw;
       height: 100vh;
@@ -21,16 +22,30 @@
       background-repeat: no-repeat;
       background-size: cover;
       background-color: #000;
+      filter: blur(2px);
+      transform: scale(1.02);
+    }
+
+    /* 中央の四角（丸ぶち） */
+    .center-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       
-      /* ぼかしを最小限の1pxに設定 */
-      filter: blur(1px);
+      width: 60%;         /* お好みでサイズ調整してください */
+      height: 400px;      /* お好みでサイズ調整してください */
       
-      /* わずかなぼかしに合わせて微調整 */
-      transform: scale(1.01);
+      background-color: rgba(255, 255, 255, 0.4); /* 白で透過度40% */
+      border-radius: 30px; /* 丸み */
+      backdrop-filter: blur(5px); /* 箱自体に軽くぼかしを入れるとおしゃれです */
+      
+      border: 2px solid rgba(255, 255, 255, 0.3); /* 薄い枠線 */
     }
   </style>
 </head>
 <body>
   <div class="bg-image"></div>
+  <div class="center-box"></div>
 </body>
 </html>

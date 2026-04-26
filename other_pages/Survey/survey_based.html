@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>日次アンケート — test</title>
-  <meta name="description" content="1日1回回答できるはい/いいえアンケート（Firebase Realtime Databaseへ保存）" />
+  <meta name="description" content="1日1回回答できるはい/いいえアンケート" />
   <style>
     :root{
-      --yes: #B8E6C2; /* pastel green */
-      --no:  #F7C6C3; /* pastel pink */
-      --card-bg: rgba(255,255,255,0.40); /* カード透過40% */
+      --yes: #B8E6C2;
+      --no:  #F7C6C3;
+      --card-bg: rgba(255,255,255,0.40); /* 透過40% */
       --muted:#666666;
       --radius:12px;
       --shadow:0 10px 30px rgba(0,0,0,0.08);
@@ -30,7 +30,7 @@
       overflow:hidden;
     }
 
-    /* 背景コンテナ（JSで画像をセットしてぼかす） */
+    /* 背景要素（JSで画像をセットしてぼかす） */
     #bg {
       position: fixed;
       inset: 0;
@@ -43,8 +43,6 @@
       transition: opacity 240ms ease;
       opacity: 0;
     }
-
-    /* 背景オーバーレイ（色調を落ち着かせる） */
     #bgOverlay {
       position: fixed;
       inset: 0;
@@ -58,11 +56,11 @@
     .card {
       width:100%;
       max-width:760px;
-      background: var(--card-bg); /* 透過40% */
+      background: var(--card-bg);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding:28px;
-      backdrop-filter: blur(4px); /* カード背面のぼかし（控えめ） */
+      backdrop-filter: blur(4px);
       box-sizing:border-box;
       text-align:center;
     }
@@ -88,13 +86,11 @@
     .btn:active { transform: translateY(1px); }
     .btn:disabled { opacity:0.6; cursor:default; transform:none; }
 
-    /* ボタンも薄めのパステルに（文字色は読みやすく調整） */
     .btn-yes { background: var(--yes); color:#1b3b1f; }
     .btn-no  { background: var(--no);  color:#4a1a18; }
 
     .counts { display:flex; gap:12px; justify-content:center; align-items:center; margin-top:8px; color:var(--muted); font-size:0.95rem; }
 
-    /* 比較バー（影なし、パステル） */
     .bar-wrap {
       margin-top:18px;
       width:100%;
@@ -134,15 +130,10 @@
       box-sizing:border-box;
       box-shadow: none;
     }
-    .bar-label {
-      font-size:0.95rem;
-      text-shadow: none;
-    }
+    .bar-label { font-size:0.95rem; text-shadow: none; }
 
     .status { margin-top:14px; font-size:0.95rem; color:#222222; min-height:1.2em; }
-
     .note { margin-top:12px; color:var(--muted); font-size:0.9rem; }
-
     .footer { margin-top:18px; font-size:0.82rem; color:var(--muted); }
 
     @media (max-width:480px){
@@ -154,7 +145,6 @@
   </style>
 </head>
 <body>
-  <!-- 背景要素（JSで画像を読み込み成功時に表示） -->
   <div id="bg" aria-hidden="true"></div>
   <div id="bgOverlay" aria-hidden="true"></div>
 
@@ -190,7 +180,7 @@
   </main>
 
   <script>
-    // Firebase 設定（ユーザー提供）
+    // Firebase 設定（そのまま）
     const firebaseConfig = {
       apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
       authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
@@ -216,44 +206,28 @@
 
     // 背景要素
     const bgEl = document.getElementById('bg');
-    const bgOverlay = document.getElementById('bgOverlay');
 
-    // Drive 画像の uc 形式 URL（ユーザー指定のファイルID）
+    // Drive の uc 形式 URL（あなたが確認済みのID）
     const driveFileId = '1lbsLiptem9usVOmEbVOBHXb9tAX1MuFC';
     const driveUrl = `https://drive.google.com/uc?export=view&id=${driveFileId}`;
 
     // 画像読み込みチェックして成功時に背景に設定、失敗時はフォールバック
     (function loadBackgroundImage() {
       const img = new Image();
-      img.crossOrigin = 'anonymous'; // 試みる（Drive が許可しない場合もある）
       img.onload = () => {
         bgEl.style.backgroundImage = `url("${driveUrl}")`;
         bgEl.style.opacity = '1';
-        bgOverlay.style.opacity = '1';
       };
       img.onerror = () => {
-        // フォールバック: グラデーション
         bgEl.style.backgroundImage = 'linear-gradient(180deg,#eef2f6 0%, #f8fafc 100%)';
         bgEl.style.filter = 'blur(4px)';
         bgEl.style.opacity = '1';
-        bgOverlay.style.opacity = '0.9';
+        console.warn('背景画像の読み込みに失敗しました。Driveの共有設定やURLを確認してください。');
       };
-      // キャッシュ回避のためにクエリを付けることも可能（コメントアウト）
-      // img.src = driveUrl + '?_=' + Date.now();
       img.src = driveUrl;
     })();
 
-    // 日付キー (YYYY-MM-DD) — ローカルで「今日投票済み」チェックに使用
-    function getDateKey(d = new Date()){
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,'0');
-      const day = String(d.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
-    }
-    const dateKey = getDateKey();
-    const localVoteKey = `tanukinu_voted_${dateKey}`;
-
-    // スクリプト読み込みユーティリティ
+    // --- Firebase 初期化と投票ロジック（compat を動的読み込み） ---
     function loadScript(src){
       return new Promise((resolve, reject) => {
         const s = document.createElement('script');
@@ -264,42 +238,27 @@
       });
     }
 
-    // 初期化
     (async function init(){
       try {
-        // Firebase compat ライブラリを読み込む
         await loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js');
         await loadScript('https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js');
 
-        // 初期化
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 保存形式: /soft_dayvote_y と /soft_dayvote_n
         const refY = db.ref('/soft_dayvote_y');
         const refN = db.ref('/soft_dayvote_n');
 
-        // 既に投票済みかどうか（ローカルチェック）
+        const dateKey = (function(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+        const localVoteKey = `tanukinu_voted_${dateKey}`;
+
+        let latestY = 0, latestN = 0;
         const alreadyVoted = !!localStorage.getItem(localVoteKey);
         setButtonsEnabled(!alreadyVoted);
 
-        // 最新値を保持
-        let latestY = 0;
-        let latestN = 0;
+        refY.on('value', snap => { latestY = (typeof snap.val() === 'number') ? snap.val() : 0; updateCounts(); });
+        refN.on('value', snap => { latestN = (typeof snap.val() === 'number') ? snap.val() : 0; updateCounts(); });
 
-        // リアルタイムで値を監視
-        refY.on('value', snapshot => {
-          const y = snapshot.val();
-          latestY = (typeof y === 'number') ? y : 0;
-          updateCounts();
-        });
-        refN.on('value', snapshot => {
-          const n = snapshot.val();
-          latestN = (typeof n === 'number') ? n : 0;
-          updateCounts();
-        });
-
-        // ボタンイベント
         btnYes.addEventListener('click', () => handleVote('y'));
         btnNo.addEventListener('click', () => handleVote('n'));
 
@@ -310,9 +269,8 @@
           countTotalEl.textContent = total;
           updateBars(latestY, latestN);
         }
-
-        function updateBars(y, n){
-          const total = Math.max(1, y + n); // 0除算防止
+        function updateBars(y,n){
+          const total = Math.max(1, y + n);
           const pY = Math.round((y / total) * 100);
           const pN = 100 - pY;
           barYes.style.width = pY + '%';
@@ -321,47 +279,26 @@
           barNoLabel.textContent = `いいえ ${pN}% (${n})`;
         }
 
-        // 投票処理
         async function handleVote(choice){
           if (localStorage.getItem(localVoteKey)) {
             statusEl.textContent = '本日は既に投票済みです。';
             return;
           }
-
           setButtonsEnabled(false);
           statusEl.textContent = '送信中...';
-
           try {
             if (choice === 'y') {
-              await new Promise((resolve, reject) => {
-                refY.transaction(current => {
-                  if (current === null || typeof current !== 'number') return 1;
-                  return current + 1;
-                }, (error, committed, snapshot) => {
-                  if (error) reject(error);
-                  else if (!committed) reject(new Error('transaction not committed'));
-                  else resolve(snapshot.val());
-                });
+              await new Promise((resolve,reject) => {
+                refY.transaction(current => (typeof current === 'number' ? current + 1 : 1),
+                  (err, committed, snap) => err ? reject(err) : committed ? resolve(snap.val()) : reject(new Error('not committed')));
               });
             } else {
-              await new Promise((resolve, reject) => {
-                refN.transaction(current => {
-                  if (current === null || typeof current !== 'number') return 1;
-                  return current + 1;
-                }, (error, committed, snapshot) => {
-                  if (error) reject(error);
-                  else if (!committed) reject(new Error('transaction not committed'));
-                  else resolve(snapshot.val());
-                });
+              await new Promise((resolve,reject) => {
+                refN.transaction(current => (typeof current === 'number' ? current + 1 : 1),
+                  (err, committed, snap) => err ? reject(err) : committed ? resolve(snap.val()) : reject(new Error('not committed')));
               });
             }
-
-            // ローカルに投票済みフラグを保存（1日限定）
-            localStorage.setItem(localVoteKey, JSON.stringify({
-              choice: choice,
-              timestamp: new Date().toISOString()
-            }));
-
+            localStorage.setItem(localVoteKey, JSON.stringify({ choice, timestamp: new Date().toISOString() }));
             statusEl.textContent = (choice === 'y') ? '「はい」を受け付けました。' : '「いいえ」を受け付けました。';
             if (choice === 'y') btnYes.setAttribute('aria-pressed','true'); else btnNo.setAttribute('aria-pressed','true');
           } catch (err) {
@@ -374,16 +311,10 @@
         function setButtonsEnabled(enabled){
           btnYes.disabled = !enabled;
           btnNo.disabled  = !enabled;
-          if (!enabled) {
-            btnYes.style.opacity = '0.9';
-            btnNo.style.opacity = '0.9';
-          } else {
-            btnYes.style.opacity = '';
-            btnNo.style.opacity = '';
-          }
+          btnYes.style.opacity = enabled ? '' : '0.9';
+          btnNo.style.opacity  = enabled ? '' : '0.9';
         }
 
-        // 初期ステータス表示
         if (alreadyVoted) {
           const info = JSON.parse(localStorage.getItem(localVoteKey) || 'null');
           const sign = info && info.choice === 'y' ? 'はい' : 'いいえ';
@@ -391,12 +322,7 @@
         } else {
           statusEl.textContent = '本日まだ投票していません。「はい」または「いいえ」を選択してください。';
         }
-
-        function getNextDateString(){
-          const d = new Date();
-          d.setDate(d.getDate() + 1);
-          return d.toLocaleDateString();
-        }
+        function getNextDateString(){ const d=new Date(); d.setDate(d.getDate()+1); return d.toLocaleDateString(); }
 
       } catch (e) {
         console.error(e);

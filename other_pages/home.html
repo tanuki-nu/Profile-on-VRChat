@@ -15,8 +15,92 @@
             background-color: #C8C8BE;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #5a5a5a;
+            padding-top: 60px;
         }
 
+        /* トップバー */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: rgba(200, 200, 190, 0.95);
+            border-bottom: 1px solid rgba(100, 100, 100, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 1000;
+        }
+
+        .bar-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(100, 100, 100, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #6a6a6a;
+        }
+
+        .profile-name {
+            font-size: 0.9rem;
+            color: #4a4a4a;
+            font-weight: 500;
+        }
+
+        .links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .links a {
+            text-decoration: none;
+            color: #6a6a6a;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .links a:hover {
+            color: #3a3a3a;
+        }
+
+        .bar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #6a6a6a;
+        }
+
+        .day-date {
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .time {
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        /* メインコンテンツ */
         header {
             padding: 60px 20px;
             text-align: center;
@@ -81,7 +165,31 @@
             letter-spacing: 1px;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 15px;
+            }
+
+            .bar-left, .bar-right {
+                width: 100%;
+                justify-content: space-between;
+                padding: 5px 0;
+            }
+
+            body {
+                padding-top: 120px;
+            }
+
+            .links {
+                gap: 10px;
+            }
+
+            .links a {
+                font-size: 0.75rem;
+            }
+
             h1 {
                 font-size: 2rem;
             }
@@ -90,14 +198,33 @@
                 flex-direction: column;
                 gap: 20px;
             }
-
-            .card {
-                padding: 30px;
-            }
         }
     </style>
 </head>
 <body>
+    <!-- トップバー -->
+    <div class="top-bar">
+        <div class="bar-left">
+            <div class="profile">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-name">Profile</div>
+            </div>
+            <div class="links">
+                <a href="#link1">Link 1</a>
+                <a href="#link2">Link 2</a>
+                <a href="#link3">Link 3</a>
+            </div>
+        </div>
+
+        <div class="bar-right">
+            <div class="day-date">
+                <div id="dayDate"></div>
+            </div>
+            <div class="time" id="time">00:00:00</div>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
     <header>
         <h1>CHILL</h1>
     </header>
@@ -125,5 +252,31 @@
     <footer>
         <p>© 2026</p>
     </footer>
+
+    <script>
+        // 時間更新
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 曜日と日付
+        function updateDayDate() {
+            const now = new Date();
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            const day = days[now.getDay()];
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const date = String(now.getDate()).padStart(2, '0');
+            document.getElementById('dayDate').textContent = `${month}/${date} (${day})`;
+        }
+
+        updateTime();
+        updateDayDate();
+        setInterval(updateTime, 1000);
+    </script>
 </body>
 </html>

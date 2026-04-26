@@ -8,35 +8,32 @@
         body {
             margin: 0;
             padding: 0;
-            /* 背景画像の設定 */
-            background-image: url('your-image-file.jpg'); /* ここにファイル名またはURLを入れる */
-            background-size: cover;      /* 画像を隙間なく全画面に広げる */
-            background-position: center; /* 画像の中心を基準にする */
-            background-attachment: fixed; /* スクロールしても背景を固定する（オプション） */
-            background-repeat: no-repeat; /* 画像を繰り返さない */
+            /* Googleドライブの直リンク用URLに変換済み */
+            background: url('https://drive.google.com/uc?export=view&id=1lbsLiptem9usVOmEbVOBHXb9tAX1MuFC') center/cover no-repeat fixed;
             
-            /* テキストを見やすくするためのスタイル */
+            /* フォントとテキストの配置設定 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
-            font-family: sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* 文字に影をつけて読みやすく */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
         }
 
         .content {
             text-align: center;
-            background: rgba(0, 0, 0, 0.3); /* 背景を少し暗くして文字を浮かせる */
-            padding: 2rem;
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.4); /* 背景を少し暗くして文字を読みやすく */
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
     <div class="content">
-        <h1>Welcome to My Page</h1>
-        <p>指定された画像が背景に設定されています。</p>
+        <h1>Background Image Loaded</h1>
+        <p>Googleドライブの画像を背景に設定しました。</p>
     </div>
 </body>
 </html>

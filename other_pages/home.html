@@ -46,6 +46,19 @@
             gap: 10px;
         }
 
+        .profile a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile a:hover {
+            opacity: 0.7;
+        }
+
         .profile-avatar {
             width: 40px;
             height: 40px;
@@ -206,14 +219,12 @@
     <div class="top-bar">
         <div class="bar-left">
             <div class="profile">
-                <div class="profile-avatar">👤</div>
-                <div class="profile-name">Profile</div>
+                <a href="https://tanuki-nu.github.io/Profile-on-VRChat/index.html" target="_blank">
+                    <div class="profile-avatar">👤</div>
+                    <div class="profile-name">Profile</div>
+                </a>
             </div>
-            <div class="links">
-                <a href="#link1">Link 1</a>
-                <a href="#link2">Link 2</a>
-                <a href="#link3">Link 3</a>
-            </div>
+            <div class="links" id="linksContainer"></div>
         </div>
 
         <div class="bar-right">
@@ -254,6 +265,45 @@
     </footer>
 
     <script>
+        // links.txtを読み込む
+        async function loadLinks() {
+            try {
+                const response = await fetch('links.txt');
+                const text = await response.text();
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                const linksContainer = document.getElementById('linksContainer');
+                let i = 0;
+                
+                while (i < lines.length) {
+                    const buttonLine = lines[i].trim();
+                    const linkLine = i + 1 < lines.length ? lines[i + 1].trim() : '';
+                    
+                    // ~テキスト~の形式を抽出
+                    const buttonMatch = buttonLine.match(/~([^~]+)~/);
+                    // =リンク=の形式を抽出
+                    const linkMatch = linkLine.match(/=([^=]+)=/);
+                    
+                    if (buttonMatch && linkMatch) {
+                        const buttonText = buttonMatch[1];
+                        const linkUrl = linkMatch[1];
+                        
+                        const link = document.createElement('a');
+                        link.href = linkUrl;
+                        link.target = '_blank';
+                        link.textContent = buttonText;
+                        linksContainer.appendChild(link);
+                        
+                        i += 2;
+                    } else {
+                        i++;
+                    }
+                }
+            } catch (error) {
+                console.error('links.txtの読み込みに失敗しました:', error);
+            }
+        }
+
         // 時間更新
         function updateTime() {
             const now = new Date();
@@ -268,12 +318,13 @@
             const now = new Date();
             const days = ['日', '月', '火', '水', '木', '金', '土'];
             const day = days[now.getDay()];
-            const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const date = String(now.getDate()).padStart(2, '0');
             document.getElementById('dayDate').textContent = `${month}/${date} (${day})`;
         }
 
+        // 初期化
+        loadLinks();
         updateTime();
         updateDayDate();
         setInterval(updateTime, 1000);

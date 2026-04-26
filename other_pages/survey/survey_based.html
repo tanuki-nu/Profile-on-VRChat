@@ -24,15 +24,9 @@
     }
     .bar-left-wrapper { display: flex; align-items: center; }
     
-    /* 戻るボタンの調整: 大きく太く */
     .back-btn {
-      color: white; 
-      font-size: 2rem;       /* サイズを大きく */
-      font-weight: 900;      /* 極太に */
-      text-decoration: none;
-      margin-right: 20px;
-      line-height: 50px;
-      padding: 0 5px;
+      color: white; font-size: 1.2rem; font-weight: 900;
+      text-decoration: none; margin-right: 15px; line-height: 50px;
     }
     .top-bar a { color: white; text-decoration: none; margin-left: 15px; font-size: 0.9rem; }
     
@@ -50,11 +44,16 @@
     }
     .test-text { font-size: 2.5rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); }
     .sub-text { font-size: 0.9rem; color: rgba(0, 0, 0, 0.6); }
-    .btn-container { display: flex; gap: 15px; margin: 10px 0; }
+    
+    /* ボタンの調整: 中央から左右に10pxずつ離す (5px + 5px) */
+    .btn-container { display: flex; gap: 10px; margin: 10px 0; }
     button {
-      padding: 8px 20px; font-size: 1.1rem; border-radius: 12px; border: none;
-      background: rgba(255, 255, 255, 0.8); cursor: pointer;
+      padding: 10px 25px; font-size: 1.1rem; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(2px);
+      cursor: pointer; transition: background 0.2s;
     }
+    button:hover { background: rgba(255, 255, 255, 0.7); }
+
     .bar-wrapper { width: 90%; margin: 5px 0; }
     .bar-container { width: 100%; height: 25px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; display: flex; }
     .bar-y { height: 100%; background: #4caf50; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
@@ -67,7 +66,7 @@
   
   <div class="top-bar">
     <div class="bar-left-wrapper">
-      <a href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">ホームページに戻る</a>
+      <a href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">← ホームページに戻る</a>
       <div id="linksContainer" style="display:flex;"></div>
     </div>
     <div><span id="dayDate"></span> <span id="time"></span></div>
@@ -78,8 +77,9 @@
       <div class="test-text">test</div>
       <div class="sub-text">by test</div>
       <div class="btn-container">
-        <button onclick="vote('soft_survey_y')">はい</button>
-        <button onclick="vote('soft_survey_n')">いいえ</button>
+        <!-- 左右に5pxずつ余白を持たせるため、marginで調整 -->
+        <button onclick="vote('soft_survey_y')" style="margin-right: 5px;">はい</button>
+        <button onclick="vote('soft_survey_n')" style="margin-left: 5px;">いいえ</button>
       </div>
       <div class="bar-wrapper">
         <div class="bar-container">
@@ -95,7 +95,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
     
-    // Top Bar Logic
     async function loadLinksFile() {
       try {
         const response = await fetch('links.txt');
@@ -122,13 +121,12 @@
     }, 1000);
     loadLinksFile();
 
-    // Firebase Logic
     const db = getDatabase(initializeApp({
       apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
       authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
       databaseURL: "https://tanuki-nu-vrc-profile-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "tanuki-nu-vrc-profile",
-      storageBucket: "tanuki-nu-vrc-profile.firebasestorage.app",
+      storageBucket: "tanuki-nu-vrc-profile.firebasedatabase.app",
       messagingSenderId: "751669057525",
       appId: "1:751669057525:web:cf65d84fdcd2a4416d32bc",
       measurementId: "G-L7JBGHCZ1E"
@@ -136,24 +134,19 @@
 
     onValue(ref(db), (snapshot) => {
       const data = snapshot.val() || { soft_survey_y: 0, soft_survey_n: 0 };
-      const y = data.soft_survey_y || 0;
-      const n = data.soft_survey_n || 0;
-      const total = y + n || 1;
-      const yPercent = Math.round(y / total * 100);
-      const nPercent = Math.round(n / total * 100);
-      document.getElementById('bar-y').style.width = yPercent + "%";
-      document.getElementById('bar-y').innerText = yPercent > 10 ? "はい(" + yPercent + "%)" : "";
-      document.getElementById('bar-n').style.width = nPercent + "%";
-      document.getElementById('bar-n').innerText = nPercent > 10 ? "いいえ(" + nPercent + "%)" : "";
+      const y = data.soft_survey_y || 0, n = data.soft_survey_n || 0, total = y + n || 1;
+      const yP = Math.round(y/total*100), nP = Math.round(n/total*100);
+      document.getElementById('bar-y').style.width = yP + "%";
+      document.getElementById('bar-y').innerText = yP > 10 ? "はい("+yP+"%)" : "";
+      document.getElementById('bar-n').style.width = nP + "%";
+      document.getElementById('bar-n').innerText = nP > 10 ? "いいえ("+nP+"%)" : "";
     });
 
-    window.vote = function(path) {
+    window.vote = (path) => {
       const lastVote = localStorage.getItem('lastVote');
       const now = new Date().getTime();
       if (lastVote && now - lastVote < 86400000) return;
-      runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => {
-        localStorage.setItem('lastVote', now);
-      });
+      runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => localStorage.setItem('lastVote', now));
     };
   </script>
 </body>

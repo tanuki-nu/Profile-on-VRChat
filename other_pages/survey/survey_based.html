@@ -31,9 +31,10 @@
       background: rgba(255, 255, 255, 0.8); cursor: pointer;
     }
     /* バーのスタイル */
-    .bar-container { width: 80%; height: 20px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; margin-top: 10px; display: flex; }
-    .bar-y { height: 100%; background: #4caf50; transition: width 0.5s; }
-    .bar-n { height: 100%; background: #f44336; transition: width 0.5s; }
+    .bar-wrapper { width: 80%; margin-top: 10px; }
+    .bar-container { width: 100%; height: 25px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; display: flex; }
+    .bar-y { height: 100%; background: #4caf50; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
+    .bar-n { height: 100%; background: #f44336; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
     .timer-text { font-size: 0.9rem; color: #333; margin-top: 10px; font-weight: bold;}
   </style>
 </head>
@@ -46,9 +47,11 @@
       <button onclick="vote('soft_survey_y')">はい</button>
       <button onclick="vote('soft_survey_n')">いいえ</button>
     </div>
-    <div class="bar-container">
-      <div id="bar-y" class="bar-y" style="width: 50%;"></div>
-      <div id="bar-n" class="bar-n" style="width: 50%;"></div>
+    <div class="bar-wrapper">
+      <div class="bar-container">
+        <div id="bar-y" class="bar-y" style="width: 50%;">はい(50%)</div>
+        <div id="bar-n" class="bar-n" style="width: 50%;">いいえ(50%)</div>
+      </div>
     </div>
     <div id="status" class="timer-text"></div>
   </div>
@@ -70,43 +73,48 @@
 
     const db = getDatabase(initializeApp(firebaseConfig));
     
-    // リアルタイムで投票結果を表示
     onValue(ref(db), (snapshot) => {
       const data = snapshot.val() || { soft_survey_y: 0, soft_survey_n: 0 };
       const y = data.soft_survey_y || 0;
       const n = data.soft_survey_n || 0;
       const total = y + n || 1;
-      document.getElementById('bar-y').style.width = (y / total * 100) + "%";
-      document.getElementById('bar-n').style.width = (n / total * 100) + "%";
+      const yPercent = Math.round(y / total * 100);
+      const nPercent = Math.round(n / total * 100);
+      
+      const barY = document.getElementById('bar-y');
+      const barN = document.getElementById('bar-n');
+      
+      barY.style.width = yPercent + "%";
+      barY.innerText = yPercent > 10 ? "はい(" + yPercent + "%)" : "";
+      
+      barN.style.width = nPercent + "%";
+      barN.innerText = nPercent > 10 ? "いいえ(" + nPercent + "%)" : "";
     });
 
-    // 投票制限ロジック (1日1回)
     window.vote = function(path) {
       const lastVote = localStorage.getItem('lastVote');
       const now = new Date().getTime();
-      if (lastVote && now - lastVote < 86400000) {
-        return; // 何もしない
-      }
+      if (lastVote && now - lastVote < 86400000) return;
       runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => {
         localStorage.setItem('lastVote', now);
       });
     };
 
-    // カウントダウンタイマー
     setInterval(() => {
       const lastVote = localStorage.getItem('lastVote');
+      const status = document.getElementById('status');
       if (lastVote) {
         const remaining = 86400000 - (new Date().getTime() - lastVote);
         if (remaining > 0) {
           const h = Math.floor(remaining / 3600000);
           const m = Math.floor((remaining % 3600000) / 60000);
           const s = Math.floor((remaining % 60000) / 1000);
-          document.getElementById('status').innerText = `次の投票は ${h}:${m}:${s} 後に可能です`;
+          status.innerText = `次の投票は ${h}:${m}:${s} 後に可能です`;
         } else {
-          document.getElementById('status').innerText = "投票可能です";
+          status.innerText = "投票可能です";
         }
       } else {
-        document.getElementById('status').innerText = "投票可能です";
+        status.innerText = "投票可能です";
       }
     }, 1000);
   </script>

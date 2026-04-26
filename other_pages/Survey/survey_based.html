@@ -7,10 +7,11 @@
   <meta name="description" content="1日1回回答できるはい/いいえアンケート（Firebase Realtime Databaseへ保存）" />
   <style>
     :root{
-      --yes:#2ea44f;
-      --no:#ea4335;
-      --card-bg: rgba(255,255,255,0.82);
-      --muted:#666;
+      /* パステルカラー（Hexで指定） */
+      --yes: #B8E6C2; /* pastel green */
+      --no:  #F7C6C3; /* pastel pink */
+      --card-bg: rgba(255,255,255,0.40); /* 透過度40% */
+      --muted:#666666;
       --radius:12px;
       --shadow:0 10px 30px rgba(0,0,0,0.08);
       --bar-bg: rgba(0,0,0,0.06);
@@ -26,25 +27,48 @@
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
       background-color: #f2f4f6; /* フォールバック色 */
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* 背景画像をぼかして表示するための要素（Google Drive 共有画像を直接表示） */
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-image: url("https://drive.google.com/uc?export=view&id=1lbsLiptem9usVOmEbVOBHXb9tAX1MuFC");
       background-position: center top;
       background-repeat: no-repeat;
       background-size: cover;
+      filter: blur(6px);
+      transform: scale(1.02); /* ぼかしで端が見えないように少し拡大 */
+    }
+
+    /* 背景の上に薄いオーバーレイ（色調を落ち着かせる） */
+    body::after{
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: rgba(255,255,255,0.06);
+      pointer-events: none;
     }
 
     .card {
       width:100%;
       max-width:760px;
-      background: var(--card-bg);
+      background: var(--card-bg); /* 透過40% */
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding:28px;
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(4px); /* カード背面のぼかし（控えめ） */
       box-sizing:border-box;
       text-align:center;
     }
 
-    h1 { margin:0 0 8px 0; font-weight:600; font-size:1.25rem; color:#222; }
-    .question { font-size:2.2rem; font-weight:700; margin:18px 0 22px 0; color:#111; letter-spacing:1px; }
+    h1 { margin:0 0 8px 0; font-weight:600; font-size:1.25rem; color:#222222; }
+    .question { font-size:2.2rem; font-weight:700; margin:18px 0 22px 0; color:#111111; letter-spacing:1px; }
 
     .controls { display:flex; gap:18px; justify-content:center; align-items:center; margin-bottom:18px; flex-wrap:wrap; }
 
@@ -57,20 +81,20 @@
       padding: 16px 28px;
       font-size: 1.05rem;
       font-weight:700;
-      color: #fff;
+      color: #ffffff;
       min-width:140px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      transition: transform .08s ease, box-shadow .12s ease, opacity .12s ease;
+      transition: transform .08s ease, opacity .12s ease;
     }
     .btn:active { transform: translateY(1px); }
-    .btn:disabled { opacity:0.6; cursor:default; transform:none; box-shadow:none; }
+    .btn:disabled { opacity:0.6; cursor:default; transform:none; }
 
-    .btn-yes { background: linear-gradient(180deg,var(--yes), #238636); }
-    .btn-no  { background: linear-gradient(180deg,var(--no),  #c5221f); }
+    /* ボタンも薄めのパステルに（文字色は読みやすく調整） */
+    .btn-yes { background: var(--yes); color:#1b3b1f; }
+    .btn-no  { background: var(--no);  color:#4a1a18; }
 
     .counts { display:flex; gap:12px; justify-content:center; align-items:center; margin-top:8px; color:var(--muted); font-size:0.95rem; }
 
-    /* 比較バー */
+    /* 比較バー（影なし、パステル） */
     .bar-wrap {
       margin-top:18px;
       width:100%;
@@ -83,37 +107,39 @@
       position:relative;
     }
     .bar-yes {
-      background: linear-gradient(90deg, rgba(46,164,79,0.95), rgba(46,164,79,0.85));
+      background: var(--yes);
       height:100%;
       display:flex;
       align-items:center;
       justify-content:flex-start;
       padding-left:12px;
-      color:#fff;
+      color:#1b3b1f;
       font-weight:700;
       transition: width 300ms ease;
       white-space:nowrap;
       box-sizing:border-box;
+      box-shadow: none;
     }
     .bar-no {
-      background: linear-gradient(90deg, rgba(234,67,53,0.95), rgba(234,67,53,0.85));
+      background: var(--no);
       height:100%;
       display:flex;
       align-items:center;
       justify-content:flex-end;
       padding-right:12px;
-      color:#fff;
+      color:#4a1a18;
       font-weight:700;
       transition: width 300ms ease;
       white-space:nowrap;
       box-sizing:border-box;
+      box-shadow: none;
     }
     .bar-label {
       font-size:0.95rem;
-      text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+      text-shadow: none;
     }
 
-    .status { margin-top:14px; font-size:0.95rem; color:#222; min-height:1.2em; }
+    .status { margin-top:14px; font-size:0.95rem; color:#222222; min-height:1.2em; }
 
     .note { margin-top:12px; color:var(--muted); font-size:0.9rem; }
 
@@ -204,24 +230,6 @@
         document.head.appendChild(s);
       });
     }
-
-    // 背景画像の読み込み検査と設定（Drive 共有画像）
-    (function ensureBackground(){
-      const imgUrl = "https://drive.google.com/uc?export=view&id=1-NmBAe6kjyl-IGru9IiA_gMiBKYcaITe";
-      const img = new Image();
-      img.onload = function(){
-        // 読み込み成功したら body の背景に設定
-        document.body.style.backgroundImage = `url("${imgUrl}")`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center top';
-      };
-      img.onerror = function(){
-        // フォールバック: グラデーションにする
-        document.body.style.backgroundImage = 'linear-gradient(180deg,#eef2f6 0%, #f8fafc 100%)';
-        document.body.style.backgroundSize = 'auto';
-      };
-      img.src = imgUrl;
-    })();
 
     // 初期化
     (async function init(){

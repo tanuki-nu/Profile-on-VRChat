@@ -251,43 +251,37 @@
 
     <script>
         // links.txtを読み込む
-        async function loadLinks() {
-            try {
-                const response = await fetch('links.txt');
-                const text = await response.text();
-                const lines = text.split('\n').filter(line => line.trim());
-                
-                const linksContainer = document.getElementById('linksContainer');
-                let i = 0;
-                
-                while (i < lines.length) {
-                    const buttonLine = lines[i].trim();
-                    const linkLine = i + 1 < lines.length ? lines[i + 1].trim() : '';
-                    
-                    // ~テキスト~の形式を抽出
-                    const buttonMatch = buttonLine.match(/~([^~]+)~/);
-                    // =リンク=の形式を抽出
-                    const linkMatch = linkLine.match(/=([^=]+)=/);
-                    
-                    if (buttonMatch && linkMatch) {
-                        const buttonText = buttonMatch[1];
-                        const linkUrl = linkMatch[1];
-                        
-                        const link = document.createElement('a');
-                        link.href = linkUrl;
-                        link.target = '_blank';
-                        link.textContent = buttonText;
-                        linksContainer.appendChild(link);
-                        
-                        i += 2;
-                    } else {
-                        i++;
-                    }
-                }
-            } catch (error) {
-                console.error('links.txtの読み込みに失敗しました:', error);
-            }
-        }
+　　　　async function loadLinks() {
+ 　　　　    try {
+ 　　　　       const response = await fetch('links.txt');
+     　      const text = await response.text();
+        
+  　         const linksContainer = document.getElementById('linksContainer');
+        
+      　     // 正規表現で ~テキスト~ と =URL= のペアをグローバルに検索
+    　       // \s* は空白や改行を許容することを意味します
+   　        const regex = /~([^~]+)~\s*=([^=]+)=/g;
+    　       let match;
+
+　           // 全てのマッチするペアをループで取り出す
+  　         while ((match = regex.exec(text)) !== null) {
+ 　              const buttonText = match[1].trim();
+      　         const linkUrl = match[2].trim();
+　   
+     　          const link = document.createElement('a');
+          　     link.href = linkUrl;
+            　   link.target = '_blank';
+           　    link.textContent = buttonText;
+            
+            　   // スタイル調整（必要に応じて）
+           　    link.style.display = 'block'; 
+            
+            　   linksContainer.appendChild(link);
+        　   }
+    　   } catch (error) {
+        　   console.error('links.txtの読み込みに失敗しました:', error);
+    　   }
+　   }
 
         // 時間更新
         function updateTime() {

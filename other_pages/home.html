@@ -119,37 +119,45 @@
             letter-spacing: 0.5px;
         }
 
-        /* 新しいセクションナビ（カードと同じ透過の枠、1本のバーとして描画） */
+        /* 新しいセクションナビ（カードと同じ透過の枠、1本のバーとして描画）
+           間隔を狭くして1本のバーに見えるように調整 */
         .section-nav {
             width: calc(100% - 40px);
             max-width: 1000px;
-            margin: 20px auto;
+            margin: 16px auto;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            justify-content: center; /* 中央寄せにして左右の余白を均等に */
+            gap: 8px; /* 間隔を狭く */
             padding: 8px;
             border-radius: 6px;
             background-color: rgba(255, 255, 255, 0.5); /* カードと同じ透過 */
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             z-index: 900;
+            box-sizing: border-box;
         }
 
+        /* 各ボタンはバー内で均等に広がるようにする（1本のバーに見える） */
         .section-button {
             position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 16px;
+            padding: 10px 12px;
             border-radius: 6px;
             cursor: pointer;
             color: #4a4a4a;
             font-size: 1rem;
             text-decoration: none;
-            transition: color 0.2s ease; /* transform removed to stop "大きくなる" */
+            transition: color 0.15s ease;
             z-index: 1;
             background: transparent;
             border: none;
+            flex: 1 1 0; /* 均等に伸びる */
+            max-width: 320px; /* 過度に広がらないように上限 */
+            min-width: 120px;
+            height: 44px;
+            box-sizing: border-box;
         }
 
         /* 背景の四角（他の要素と同じ透過度） */
@@ -164,6 +172,7 @@
 
         .section-button:hover {
             color: #333;
+            /* transform removed */
         }
 
         .section-button.active {
@@ -204,44 +213,71 @@
         }
 
         /* プロフィールボックス（はじめての方へ） */
+        /* 要求: 横幅を枠の端から50px離した距離に、高さ300px、文字サイズは枠より小さい程度 */
         .profile-box {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 18px 24px;
+            width: calc(100% - 100px); /* 左右それぞれ50pxの余白 */
+            height: 300px;
             background-color: rgba(255,255,255,0.5);
-            border-radius: 6px;
+            border-radius: 8px;
             text-decoration: none;
             color: #333;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: none; /* 動きなし */
+            transition: none;
+            box-sizing: border-box;
+            font-size: 1.15rem; /* カード見出しより小さめ（見出し1.6remに対して） */
+            text-align: center;
+            white-space: nowrap; /* 改行しない */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 8px;
         }
 
-        /* タイルレイアウト（他のアカウントのリンク） */
+        /* タイルレイアウト（他のアカウントのリンク） - DJパッド風 */
         .tiles {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
             width: 100%;
+            align-items: stretch;
         }
 
+        /* DJパッド風ボタン */
         .tile {
-            background-color: rgba(255,255,255,0.5);
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,245,245,0.5));
+            border-radius: 12px;
             padding: 12px;
-            border-radius: 6px;
-            text-align: center;
+            height: 120px; /* 固定高さでパッド感 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 -6px 12px rgba(0,0,0,0.03), 0 6px 18px rgba(0,0,0,0.06);
             cursor: pointer;
-            color: #333;
-            font-weight: 500;
-            overflow: visible;
-            white-space: normal; /* 折り返し許可 */
-            text-overflow: clip;
-            transition: box-shadow 0.12s ease; /* transform removed */
+            color: #222;
+            font-weight: 600;
+            box-sizing: border-box;
+            text-align: center;
+            overflow: hidden;
         }
 
-        .tile:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        /* テキストは中央揃えでボタンより小さい程度 */
+        .tile .tile-text {
+            display: block;
+            width: 100%;
+            padding: 0 6px;
+            font-size: 14px; /* ボタン高さ120pxに対して改行されない程度から5px小さめ */
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        .tile:active {
+            transform: translateY(1px);
         }
 
         /* 改変データの表示 */
@@ -271,6 +307,13 @@
             margin-left: 75px;
             margin-right: 75px;
             box-sizing: border-box;
+        }
+
+        @media (max-width: 1024px) {
+            .section-button { max-width: 260px; }
+            .profile-box { width: calc(100% - 80px); } /* 少し余裕 */
+            .tile { height: 110px; }
+            .tile .tile-text { font-size: 13px; }
         }
 
         @media (max-width: 768px) {
@@ -305,7 +348,7 @@
             .section-nav {
                 width: calc(100% - 24px);
                 padding: 8px;
-                gap: 8px;
+                gap: 6px;
             }
 
             .card.wide {
@@ -318,13 +361,16 @@
                 grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
 
-            /* モバイル時は日付・時間の高さを自動にして崩れないようにする */
-            .day-date, .time {
-                height: auto;
-                line-height: normal;
-                min-width: 60px;
-                padding: 6px 0;
+            .profile-box {
+                width: calc(100% - 60px);
+                height: 220px;
+                font-size: 1rem;
+                white-space: normal;
+                padding: 12px;
             }
+
+            .tile { height: 100px; }
+            .tile .tile-text { font-size: 12px; }
         }
     </style>
 </head>
@@ -457,7 +503,7 @@
 
                 // 《...》で囲まれた部分を太字かつ大きめにし、括弧自体は表示しない
                 text = text.replace(/《([^》]+)》/g, function(_, inner) {
-                    return `<strong style="font-weight:700; font-size:1.15rem; display:inline-block;">${inner}</strong>`;
+                    return `<strong style="font-weight:700; font-size:1.25rem; display:inline-block;">${inner}</strong>`;
                 });
 
                 // URLをリンク化
@@ -502,7 +548,7 @@
                 tilesArea.innerHTML = '';
 
                 if (parsedLinks.length === 0) {
-                    tilesArea.innerHTML = `<div class="tile">リンクが見つかりませんでした。</div>`;
+                    tilesArea.innerHTML = `<div class="tile"><span class="tile-text">リンクが見つかりませんでした。</span></div>`;
                 } else {
                     parsedLinks.forEach(item => {
                         const tile = document.createElement('div');
@@ -510,8 +556,14 @@
                         tile.tabIndex = 0;
                         tile.setAttribute('role', 'link');
                         tile.setAttribute('aria-label', item.text);
-                        // テキストを折り返すようにして、最後まで表示されるようにする
-                        tile.innerHTML = `<div style="word-break:break-word;">${item.text}</div>`;
+
+                        // DJパッド風の中央テキスト（改行しない、ボタンより小さいサイズ）
+                        const span = document.createElement('span');
+                        span.className = 'tile-text';
+                        span.textContent = item.text;
+
+                        tile.appendChild(span);
+
                         tile.addEventListener('click', () => {
                             window.open(item.url, '_blank', 'noopener');
                         });

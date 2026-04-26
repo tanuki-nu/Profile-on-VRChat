@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Blurred Background</title>
+  <title>Soft Background</title>
   <style>
     html, body {
       margin: 0;
@@ -22,11 +22,11 @@
       background-size: cover;
       background-color: #000;
       
-      /* ぼかしを少し抑えめにしました */
-      filter: blur(10px);
+      /* ぼかしを5pxに調整して控えめにしました */
+      filter: blur(5px);
       
-      /* ぼかしによる端の隙間を隠すための拡大 */
-      transform: scale(1.05);
+      /* ぼかしがごくわずかなので、拡大率は少しだけにして端をカバーします */
+      transform: scale(1.02);
     }
   </style>
 </head>

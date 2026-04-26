@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Background Image</title>
+  <title>Blurred Background</title>
   <style>
     html, body {
       margin: 0;
@@ -16,12 +16,17 @@
     .bg-image {
       width: 100vw;
       height: 100vh;
-      /* Google DriveのIDを埋め込んだURL */
       background-image: url('https://lh3.googleusercontent.com/d/1lbsLiptem9usVOmEbVOBHXb9tAX1MuFC');
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
       background-color: #000;
+      
+      /* ここでぼかしを調整しています */
+      filter: blur(20px);
+      
+      /* ぼかしで端が薄くなるのを防ぐための設定 */
+      transform: scale(1.1);
     }
   </style>
 </head>

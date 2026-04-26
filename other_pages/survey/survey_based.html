@@ -6,56 +6,35 @@
   <title>Survey Page</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+      display: flex; justify-content: center; align-items: center;
     }
     .bg-image {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
       background-image: url('https://lh3.googleusercontent.com/d/1lbsLiptem9usVOmEbVOBHXb9tAX1MuFC');
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-color: #000;
-      filter: blur(2px);
-      transform: scale(1.02);
-      z-index: -1;
+      background-position: center; background-repeat: no-repeat; background-size: cover;
+      background-color: #000; filter: blur(2px); transform: scale(1.02); z-index: -1;
     }
     .center-box {
-      width: 60%;
-      height: 450px;
+      width: 60%; height: 500px;
       background-color: rgba(255, 255, 255, 0.4);
-      border-radius: 30px;
-      backdrop-filter: blur(5px);
+      border-radius: 30px; backdrop-filter: blur(5px);
       border: 2px solid rgba(255, 255, 255, 0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 30px;
-      gap: 15px;
+      display: flex; flex-direction: column; align-items: center;
+      padding-top: 30px; gap: 15px;
     }
-    .test-text { font-size: 3rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); font-family: sans-serif; }
-    .sub-text { font-size: 1rem; color: rgba(0, 0, 0, 0.6); font-family: sans-serif; }
-    .btn-container { display: flex; gap: 20px; margin-top: 20px; }
+    .test-text { font-size: 3rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); }
+    .sub-text { font-size: 1rem; color: rgba(0, 0, 0, 0.6); }
+    .btn-container { display: flex; gap: 20px; }
     button {
-      padding: 10px 25px;
-      font-size: 1.2rem;
-      border-radius: 15px;
-      border: none;
-      background: rgba(255, 255, 255, 0.8);
-      cursor: pointer;
-      transition: background 0.3s;
+      padding: 10px 25px; font-size: 1.2rem; border-radius: 15px; border: none;
+      background: rgba(255, 255, 255, 0.8); cursor: pointer;
     }
-    button:hover { background: rgba(255, 255, 255, 1); }
+    /* バーのスタイル */
+    .bar-container { width: 80%; height: 20px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; margin-top: 10px; display: flex; }
+    .bar-y { height: 100%; background: #4caf50; transition: width 0.5s; }
+    .bar-n { height: 100%; background: #f44336; transition: width 0.5s; }
+    .timer-text { font-size: 0.9rem; color: #333; margin-top: 10px; font-weight: bold;}
   </style>
 </head>
 <body>
@@ -67,12 +46,16 @@
       <button onclick="vote('soft_survey_y')">はい</button>
       <button onclick="vote('soft_survey_n')">いいえ</button>
     </div>
+    <div class="bar-container">
+      <div id="bar-y" class="bar-y" style="width: 50%;"></div>
+      <div id="bar-n" class="bar-n" style="width: 50%;"></div>
+    </div>
+    <div id="status" class="timer-text"></div>
   </div>
 
-  <!-- Firebase SDKの読み込みと処理 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
@@ -85,20 +68,47 @@
       measurementId: "G-L7JBGHCZ1E"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const db = getDatabase(initializeApp(firebaseConfig));
+    
+    // リアルタイムで投票結果を表示
+    onValue(ref(db), (snapshot) => {
+      const data = snapshot.val() || { soft_survey_y: 0, soft_survey_n: 0 };
+      const y = data.soft_survey_y || 0;
+      const n = data.soft_survey_n || 0;
+      const total = y + n || 1;
+      document.getElementById('bar-y').style.width = (y / total * 100) + "%";
+      document.getElementById('bar-n').style.width = (n / total * 100) + "%";
+    });
 
-    // 投票処理の関数
+    // 投票制限ロジック (1日1回)
     window.vote = function(path) {
-      const dbRef = ref(db, path);
-      runTransaction(dbRef, (currentData) => {
-        return (currentData || 0) + 1;
-      }).then(() => {
-        alert("投票ありがとうございます！");
-      }).catch((error) => {
-        console.error("エラー:", error);
+      const lastVote = localStorage.getItem('lastVote');
+      const now = new Date().getTime();
+      if (lastVote && now - lastVote < 86400000) {
+        return; // 何もしない
+      }
+      runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => {
+        localStorage.setItem('lastVote', now);
       });
     };
+
+    // カウントダウンタイマー
+    setInterval(() => {
+      const lastVote = localStorage.getItem('lastVote');
+      if (lastVote) {
+        const remaining = 86400000 - (new Date().getTime() - lastVote);
+        if (remaining > 0) {
+          const h = Math.floor(remaining / 3600000);
+          const m = Math.floor((remaining % 3600000) / 60000);
+          const s = Math.floor((remaining % 60000) / 1000);
+          document.getElementById('status').innerText = `次の投票は ${h}:${m}:${s} 後に可能です`;
+        } else {
+          document.getElementById('status').innerText = "投票可能です";
+        }
+      } else {
+        document.getElementById('status').innerText = "投票可能です";
+      }
+    }, 1000);
   </script>
 </body>
 </html>

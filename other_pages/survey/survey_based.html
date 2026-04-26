@@ -40,18 +40,24 @@
       backdrop-filter: blur(5px);
       border: 2px solid rgba(255, 255, 255, 0.3);
       
-      /* 文字の配置用 */
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding-top: 30px; /* 位置をさらに上に微調整 */
     }
 
     .test-text {
-      margin-top: 56.25px; /* 高さの1/4 (450px * 0.125) の調整値 */
-      font-size: 3rem;     /* 大きめのサイズ */
+      font-size: 3rem;
       font-weight: bold;
-      color: rgba(0, 0, 0, 0.7);
+      color: rgba(0, 0, 0, 0.8);
       font-family: sans-serif;
+    }
+
+    .sub-text {
+      font-size: 1rem; /* 小さめ */
+      color: rgba(0, 0, 0, 0.6);
+      font-family: sans-serif;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -59,6 +65,7 @@
   <div class="bg-image"></div>
   <div class="center-box">
     <div class="test-text">test</div>
+    <div class="sub-text">by test</div>
   </div>
 </body>
 </html>

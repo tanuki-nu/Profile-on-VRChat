@@ -13,7 +13,6 @@
       overflow: hidden;
     }
 
-    /* 背景画像エリア */
     .bg-image {
       width: 100vw;
       height: 100vh;
@@ -26,21 +25,19 @@
       transform: scale(1.02);
     }
 
-    /* 中央の四角（丸ぶち） */
     .center-box {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       
-      width: 60%;         /* お好みでサイズ調整してください */
-      height: 400px;      /* お好みでサイズ調整してください */
+      width: 60%;
+      height: 450px; /* 50pxプラスしました */
       
-      background-color: rgba(255, 255, 255, 0.4); /* 白で透過度40% */
-      border-radius: 30px; /* 丸み */
-      backdrop-filter: blur(5px); /* 箱自体に軽くぼかしを入れるとおしゃれです */
-      
-      border: 2px solid rgba(255, 255, 255, 0.3); /* 薄い枠線 */
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 30px;
+      backdrop-filter: blur(5px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
     }
   </style>
 </head>

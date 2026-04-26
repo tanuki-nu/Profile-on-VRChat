@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Overlay Box with Text</title>
+  <title>Survey Page</title>
   <style>
     html, body {
       margin: 0;
@@ -15,7 +15,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .bg-image {
       position: absolute;
       top: 0;
@@ -31,7 +30,6 @@
       transform: scale(1.02);
       z-index: -1;
     }
-
     .center-box {
       width: 60%;
       height: 450px;
@@ -39,26 +37,25 @@
       border-radius: 30px;
       backdrop-filter: blur(5px);
       border: 2px solid rgba(255, 255, 255, 0.3);
-      
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 30px; /* 位置をさらに上に微調整 */
+      padding-top: 30px;
+      gap: 15px;
     }
-
-    .test-text {
-      font-size: 3rem;
-      font-weight: bold;
-      color: rgba(0, 0, 0, 0.8);
-      font-family: sans-serif;
+    .test-text { font-size: 3rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); font-family: sans-serif; }
+    .sub-text { font-size: 1rem; color: rgba(0, 0, 0, 0.6); font-family: sans-serif; }
+    .btn-container { display: flex; gap: 20px; margin-top: 20px; }
+    button {
+      padding: 10px 25px;
+      font-size: 1.2rem;
+      border-radius: 15px;
+      border: none;
+      background: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      transition: background 0.3s;
     }
-
-    .sub-text {
-      font-size: 1rem; /* 小さめ */
-      color: rgba(0, 0, 0, 0.6);
-      font-family: sans-serif;
-      margin-top: 5px;
-    }
+    button:hover { background: rgba(255, 255, 255, 1); }
   </style>
 </head>
 <body>
@@ -66,6 +63,42 @@
   <div class="center-box">
     <div class="test-text">test</div>
     <div class="sub-text">by test</div>
+    <div class="btn-container">
+      <button onclick="vote('soft_survey_y')">はい</button>
+      <button onclick="vote('soft_survey_n')">いいえ</button>
+    </div>
   </div>
+
+  <!-- Firebase SDKの読み込みと処理 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
+      authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
+      databaseURL: "https://tanuki-nu-vrc-profile-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tanuki-nu-vrc-profile",
+      storageBucket: "tanuki-nu-vrc-profile.firebasestorage.app",
+      messagingSenderId: "751669057525",
+      appId: "1:751669057525:web:cf65d84fdcd2a4416d32bc",
+      measurementId: "G-L7JBGHCZ1E"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 投票処理の関数
+    window.vote = function(path) {
+      const dbRef = ref(db, path);
+      runTransaction(dbRef, (currentData) => {
+        return (currentData || 0) + 1;
+      }).then(() => {
+        alert("投票ありがとうございます！");
+      }).catch((error) => {
+        console.error("エラー:", error);
+      });
+    };
+  </script>
 </body>
 </html>

@@ -19,7 +19,7 @@
             background-attachment: fixed;
         }
 
-        /* トップバー - 白いバー100% */
+        /* トップバー */
         .top-bar {
             position: fixed;
             top: 0;
@@ -47,17 +47,11 @@
             color: #4a4a4a;
             font-size: 0.9rem;
             font-weight: 400;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 60px;
             height: 60px;
             display: flex;
             align-items: center;
             transition: color 0.3s ease;
-        }
-
-        .profile a:hover,
-        .links a:hover {
-            color: #3a3a3a;
         }
 
         .links {
@@ -72,12 +66,10 @@
             font-size: 0.9rem;
             color: #4a4a4a;
             font-weight: 400;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 60px;
             height: 60px;
         }
 
-        /* day-date と time をトップバーの他要素と揃える */
         .day-date, .time {
             display: flex;
             align-items: center;
@@ -85,7 +77,6 @@
             height: 60px;
             line-height: 60px;
             font-size: 0.9rem;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #4a4a4a;
             min-width: 80px;
             box-sizing: border-box;
@@ -97,7 +88,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* メインコンテンツ */
+        /* ヘッダー */
         header {
             background-color: rgba(255, 255, 255, 0.6);
             padding: 60px 20px 40px 20px;
@@ -119,25 +110,23 @@
             letter-spacing: 0.5px;
         }
 
-        /* 新しいセクションナビ（カードと同じ透過の枠、1本のバーとして描画）
-           間隔を狭くして1本のバーに見えるように調整 */
+        /* セクションナビ（1本のバー、透過） */
         .section-nav {
             width: calc(100% - 40px);
             max-width: 1000px;
             margin: 16px auto;
             display: flex;
             align-items: center;
-            justify-content: center; /* 中央寄せにして左右の余白を均等に */
-            gap: 8px; /* 間隔を狭く */
+            justify-content: center;
+            gap: 8px;
             padding: 8px;
             border-radius: 6px;
-            background-color: rgba(255, 255, 255, 0.5); /* カードと同じ透過 */
+            background-color: rgba(255, 255, 255, 0.5);
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             z-index: 900;
             box-sizing: border-box;
         }
 
-        /* 各ボタンはバー内で均等に広がるようにする（1本のバーに見える） */
         .section-button {
             position: relative;
             display: inline-flex;
@@ -153,14 +142,13 @@
             z-index: 1;
             background: transparent;
             border: none;
-            flex: 1 1 0; /* 均等に伸びる */
-            max-width: 320px; /* 過度に広がらないように上限 */
+            flex: 1 1 0;
+            max-width: 320px;
             min-width: 120px;
             height: 44px;
             box-sizing: border-box;
         }
 
-        /* 背景の四角（他の要素と同じ透過度） */
         .section-button::before {
             content: "";
             position: absolute;
@@ -170,16 +158,8 @@
             z-index: -1;
         }
 
-        .section-button:hover {
-            color: #333;
-            /* transform removed */
-        }
-
-        .section-button.active {
-            color: #222;
-            font-weight: 600;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-        }
+        .section-button:hover { color: #333; }
+        .section-button.active { color: #222; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
 
         .container {
             max-width: 1000px;
@@ -187,7 +167,7 @@
             padding: 0 20px;
         }
 
-        /* 単一のカード（動的に内容を切り替える） */
+        /* メインカード（単一） */
         .card {
             background-color: rgba(255, 255, 255, 0.5);
             padding: 40px;
@@ -212,48 +192,58 @@
             margin-bottom: 12px;
         }
 
-        /* プロフィールボックス（はじめての方へ） */
-        /* 要求: 横幅を枠の端から50px離した距離に、高さ300px、文字サイズは枠より小さい程度 */
+        /* はじめての方へ: プロフィールボタンをリセットして押しやすいサイズに */
         .profile-box {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: calc(100% - 100px); /* 左右それぞれ50pxの余白 */
-            height: 300px;
-            background-color: rgba(255,255,255,0.5);
-            border-radius: 8px;
+            display: block;
+            width: calc(100% - 100px); /* 左右50pxずつ余白 */
+            max-width: 800px;
+            height: 140px; /* 押しやすいサイズ（一般的なタッチターゲットより大きめ） */
+            margin-top: 12px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: rgba(255,255,255,0.6);
+            border-radius: 10px;
             text-decoration: none;
-            color: #333;
+            color: #222;
             font-weight: 600;
             cursor: pointer;
-            transition: none;
             box-sizing: border-box;
-            font-size: 1.15rem; /* カード見出しより小さめ（見出し1.6remに対して） */
-            text-align: center;
-            white-space: nowrap; /* 改行しない */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 8px;
-        }
-
-        /* タイルレイアウト（他のアカウントのリンク） - DJパッド風 */
-        .tiles {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 16px;
-            width: 100%;
-            align-items: stretch;
-        }
-
-        /* DJパッド風ボタン */
-        .tile {
-            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,245,245,0.5));
-            border-radius: 12px;
-            padding: 12px;
-            height: 120px; /* 固定高さでパッド感 */
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.25rem; /* 見出しより小さめ */
+            text-align: center;
+            padding: 12px;
+            line-height: 1.1;
+            transition: box-shadow 0.12s ease;
+        }
+
+        .profile-box:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+        /* 他のアカウント: メイソンリーレイアウト（カラムベース） */
+        .card.wide {
+            width: calc(100% - 150px);
+            margin-left: 75px;
+            margin-right: 75px;
+            box-sizing: border-box;
+        }
+
+        .tiles {
+            column-width: 180px; /* メイソンリーの基準幅 */
+            column-gap: 16px;
+            width: 100%;
+        }
+
+        /* 各タイルはカラム内でインラインブロックとして流れる */
+        .tile {
+            display: inline-block;
+            width: 100%;
+            margin: 0 0 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,245,245,0.5));
+            border-radius: 12px;
+            padding: 12px;
             box-shadow: inset 0 -6px 12px rgba(0,0,0,0.03), 0 6px 18px rgba(0,0,0,0.06);
             cursor: pointer;
             color: #222;
@@ -261,23 +251,23 @@
             box-sizing: border-box;
             text-align: center;
             overflow: hidden;
+            white-space: nowrap; /* 改行させない */
+            text-overflow: ellipsis;
+            height: 120px; /* 見た目をDJパッド風に保つ */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* テキストは中央揃えでボタンより小さい程度 */
+        /* タイル内テキストは中央揃え、サイズはJSで自動調整 */
         .tile .tile-text {
-            display: block;
-            width: 100%;
-            padding: 0 6px;
-            font-size: 14px; /* ボタン高さ120pxに対して改行されない程度から5px小さめ */
-            line-height: 1.2;
+            display: inline-block;
+            width: calc(100% - 12px);
+            text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-align: center;
-        }
-
-        .tile:active {
-            transform: translateY(1px);
+            line-height: 1;
         }
 
         /* 改変データの表示 */
@@ -301,76 +291,22 @@
             letter-spacing: 1px;
         }
 
-        /* wide card for other accounts (75px margin left/right) */
-        .card.wide {
-            width: calc(100% - 150px);
-            margin-left: 75px;
-            margin-right: 75px;
-            box-sizing: border-box;
-        }
-
         @media (max-width: 1024px) {
-            .section-button { max-width: 260px; }
-            .profile-box { width: calc(100% - 80px); } /* 少し余裕 */
+            .profile-box { width: calc(100% - 80px); height: 130px; font-size: 1.1rem; }
             .tile { height: 110px; }
-            .tile .tile-text { font-size: 13px; }
         }
 
         @media (max-width: 768px) {
-            .top-bar {
-                flex-direction: column;
-                height: auto;
-                padding: 10px 15px;
-            }
-
-            .bar-left, .bar-right {
-                width: 100%;
-                justify-content: space-between;
-                padding: 5px 0;
-            }
-
-            body {
-                padding-top: 120px;
-            }
-
-            .links {
-                gap: 10px;
-            }
-
-            .links a {
-                font-size: 0.75rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .section-nav {
-                width: calc(100% - 24px);
-                padding: 8px;
-                gap: 6px;
-            }
-
-            .card.wide {
-                width: calc(100% - 40px);
-                margin-left: 20px;
-                margin-right: 20px;
-            }
-
-            .tiles {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-
-            .profile-box {
-                width: calc(100% - 60px);
-                height: 220px;
-                font-size: 1rem;
-                white-space: normal;
-                padding: 12px;
-            }
-
+            .top-bar { flex-direction: column; height: auto; padding: 10px 15px; }
+            .bar-left, .bar-right { width: 100%; justify-content: space-between; padding: 5px 0; }
+            body { padding-top: 120px; }
+            .links { gap: 10px; }
+            h1 { font-size: 2rem; }
+            .section-nav { width: calc(100% - 24px); padding: 8px; gap: 6px; }
+            .card.wide { width: calc(100% - 40px); margin-left: 20px; margin-right: 20px; }
+            .tiles { column-width: 140px; column-gap: 12px; }
+            .profile-box { width: calc(100% - 60px); height: 120px; font-size: 1rem; }
             .tile { height: 100px; }
-            .tile .tile-text { font-size: 12px; }
         }
     </style>
 </head>
@@ -394,13 +330,13 @@
         </div>
     </div>
 
-    <!-- メインコンテンツ -->
+    <!-- ヘッダー -->
     <header>
         <h1>ようこそ！</h1>
         <p class="welcome-message">お越しになっていただきありがとうございます！</p>
     </header>
 
-    <!-- 新しいセクションナビ（1本のバー） -->
+    <!-- セクションナビ -->
     <div class="section-nav" role="tablist" aria-label="主要セクション">
         <button class="section-button active" data-section="first" id="btn-first" role="tab" aria-selected="true">はじめての方へ</button>
         <button class="section-button" data-section="accounts" id="btn-accounts" role="tab" aria-selected="false">他のアカウントのリンク</button>
@@ -410,7 +346,6 @@
     <div class="container">
         <!-- 単一のカード。内容はJSで切り替える -->
         <div id="mainCard" class="card">
-            <!-- 初期表示は「はじめての方へ」 -->
             <h2>はじめての方へ</h2>
             <a id="profileBox" class="profile-box" href="https://tanuki-nu.github.io/Profile-on-VRChat/index.html" target="_blank" rel="noopener noreferrer">
                 プロフィール
@@ -423,17 +358,14 @@
     </footer>
 
     <script>
-        // グローバルにリンク配列を保持（links.txtの内容）
         let parsedLinks = [];
 
-        // links.txtを読み込む（トップバー用とタイル用に使う）
         async function loadLinksFile() {
             try {
                 const response = await fetch('links.txt');
                 if (!response.ok) throw new Error('links.txt を取得できませんでした');
                 const text = await response.text();
                 const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
-                // parse into pairs: ~text~ then =url=
                 parsedLinks = [];
                 for (let i = 0; i < lines.length; ) {
                     const buttonLine = lines[i];
@@ -441,17 +373,13 @@
                     const buttonMatch = buttonLine.match(/~([^~]+)~/);
                     const linkMatch = linkLine.match(/=([^=]+)=/);
                     if (buttonMatch && linkMatch) {
-                        parsedLinks.push({
-                            text: buttonMatch[1],
-                            url: linkMatch[1]
-                        });
+                        parsedLinks.push({ text: buttonMatch[1], url: linkMatch[1] });
                         i += 2;
                     } else {
                         i += 1;
                     }
                 }
 
-                // トップバーの linksContainer に追加（既存の処理を維持）
                 const linksContainer = document.getElementById('linksContainer');
                 linksContainer.innerHTML = '';
                 parsedLinks.forEach(item => {
@@ -467,7 +395,6 @@
             }
         }
 
-        // 時間更新
         function updateTime() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -476,7 +403,6 @@
             document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
         }
 
-        // 曜日と日付
         function updateDayDate() {
             const now = new Date();
             const days = ['日', '月', '火', '水', '木', '金', '土'];
@@ -486,7 +412,6 @@
             document.getElementById('dayDate').textContent = `${month}/${date} (${day})`;
         }
 
-        // ユーティリティ: テキスト内のURLをリンクに変換
         function linkify(text) {
             const urlRegex = /((https?:\/\/)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/g;
             return text.replace(urlRegex, function(url) {
@@ -494,24 +419,19 @@
             });
         }
 
-        // 改変データを読み込んで表示用に整形
         async function loadModifiedData() {
             try {
                 const response = await fetch('modified_data.txt');
                 if (!response.ok) throw new Error('modified_data.txt を取得できませんでした');
                 let text = await response.text();
 
-                // 《...》で囲まれた部分を太字かつ大きめにし、括弧自体は表示しない
+                // 《...》を太字かつ大きめにして、括弧自体は表示しない
                 text = text.replace(/《([^》]+)》/g, function(_, inner) {
                     return `<strong style="font-weight:700; font-size:1.25rem; display:inline-block;">${inner}</strong>`;
                 });
 
-                // URLをリンク化
                 text = linkify(text);
-
-                // 改行を <br> に変換して表示を保つ
                 text = text.replace(/\r?\n/g, '<br>');
-
                 return text;
             } catch (err) {
                 console.error('modified_data.txtの読み込みに失敗しました:', err);
@@ -519,27 +439,70 @@
             }
         }
 
-        // セクション切り替え処理
+        // タイル内テキストのフォントサイズを自動調整して改行を防ぐ
+        function adjustTileFontSizes() {
+            const tiles = document.querySelectorAll('.tile .tile-text');
+            tiles.forEach(el => {
+                // リセットしてから計算
+                el.style.fontSize = '';
+                el.style.whiteSpace = 'nowrap';
+
+                const parent = el.parentElement;
+                const padding = 24; // tile内の左右余白目安
+                const maxWidth = Math.max(parent.clientWidth - padding, 20);
+
+                // 初期サイズ（大きめ）
+                let fontSize = 18; // px
+                el.style.fontSize = fontSize + 'px';
+
+                // 測定ループ: テキストがはみ出す or 見切れる場合は縮小
+                // scrollWidth と clientWidth を比較して調整
+                const maxIterations = 20;
+                let iter = 0;
+                while (iter < maxIterations) {
+                    const needsShrink = el.scrollWidth > maxWidth || el.offsetHeight > parent.clientHeight;
+                    if (!needsShrink) break;
+                    fontSize = Math.max(10, fontSize - 1); // 最小フォントサイズを10pxに設定
+                    el.style.fontSize = fontSize + 'px';
+                    iter++;
+                }
+
+                // 最終的に余白がある場合は少し拡大（ただし上限あり）
+                let enlargeIter = 0;
+                while (enlargeIter < 3) {
+                    const fits = el.scrollWidth <= maxWidth && el.offsetHeight <= parent.clientHeight;
+                    if (!fits) break;
+                    // try to enlarge a bit if there's room
+                    const nextSize = fontSize + 1;
+                    el.style.fontSize = nextSize + 'px';
+                    if (el.scrollWidth > maxWidth || el.offsetHeight > parent.clientHeight) {
+                        // revert
+                        el.style.fontSize = fontSize + 'px';
+                        break;
+                    } else {
+                        fontSize = nextSize;
+                    }
+                    enlargeIter++;
+                }
+            });
+        }
+
+        // セクション切替
         async function switchSection(section) {
             const mainCard = document.getElementById('mainCard');
-            // reset wide class
             mainCard.classList.remove('wide');
-            mainCard.innerHTML = ''; // クリア
+            mainCard.innerHTML = '';
 
             if (section === 'first') {
-                // はじめての方へ
                 mainCard.classList.remove('wide');
                 mainCard.innerHTML = `
                     <h2>はじめての方へ</h2>
                     <a id="profileBoxInner" class="profile-box" href="${document.getElementById('topProfileLink').href}" target="_blank" rel="noopener noreferrer">プロフィール</a>
                 `;
             } else if (section === 'accounts') {
-                // 他のアカウントのリンク
-                // 幅をページ端から75px離す
                 mainCard.classList.add('wide');
                 mainCard.innerHTML = `<h2>他のアカウントのリンク</h2><div id="tilesArea" class="tiles" aria-live="polite"></div>`;
 
-                // Ensure links are loaded
                 if (parsedLinks.length === 0) {
                     await loadLinksFile();
                 }
@@ -557,7 +520,6 @@
                         tile.setAttribute('role', 'link');
                         tile.setAttribute('aria-label', item.text);
 
-                        // DJパッド風の中央テキスト（改行しない、ボタンより小さいサイズ）
                         const span = document.createElement('span');
                         span.className = 'tile-text';
                         span.textContent = item.text;
@@ -574,9 +536,15 @@
                         });
                         tilesArea.appendChild(tile);
                     });
+
+                    // 微小な遅延でフォント調整（レイアウト確定後）
+                    requestAnimationFrame(() => {
+                        adjustTileFontSizes();
+                    });
+                    // さらにウィンドウリサイズ時にも再調整
+                    window.addEventListener('resize', debounce(adjustTileFontSizes, 120));
                 }
             } else if (section === 'modified') {
-                // 改変データ
                 mainCard.classList.remove('wide');
                 mainCard.innerHTML = `<h2>改変データ</h2><div id="modifiedArea" class="modified-text">読み込み中...</div>`;
                 const modifiedArea = document.getElementById('modifiedArea');
@@ -585,34 +553,43 @@
             }
         }
 
-        // ナビボタンの初期化
+        // ナビ初期化
         function initSectionNav() {
             const buttons = document.querySelectorAll('.section-button');
             buttons.forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    // update active state
-                    buttons.forEach(b => {
-                        b.classList.remove('active');
-                        b.setAttribute('aria-selected', 'false');
-                    });
+                    buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
                     btn.classList.add('active');
                     btn.setAttribute('aria-selected', 'true');
-
                     const section = btn.getAttribute('data-section');
                     await switchSection(section);
                 });
             });
         }
 
+        // デバウンスユーティリティ
+        function debounce(fn, wait) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
         // 初期化
         (async function init() {
-            await loadLinksFile(); // 先に読み込んでおく
+            await loadLinksFile();
             initSectionNav();
             await switchSection('first');
 
             updateTime();
             updateDayDate();
             setInterval(updateTime, 1000);
+
+            // 画面読み込み後にタイルのフォント調整（念のため）
+            window.addEventListener('load', () => {
+                adjustTileFontSizes();
+            });
         })();
     </script>
 </body>

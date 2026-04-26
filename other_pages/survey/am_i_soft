@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>アンケート By たぬきーぬ</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+      font-family: sans-serif;
+    }
+    .bg-image {
+      position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: url('https://lh3.googleusercontent.com/d/1lbsLiptem9usVOmEbVOBHXb9tAX1MuFC');
+      background-position: center; background-repeat: no-repeat; background-size: cover;
+      background-color: #000; filter: blur(2px); transform: scale(1.02); z-index: -1;
+    }
+    /* Top Bar */
+    .top-bar {
+      position: fixed; top: 0; width: 100%; height: 50px;
+      background: rgba(0, 0, 0, 0.5); color: white;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 15px; box-sizing: border-box; z-index: 100;
+    }
+    .bar-left-wrapper { display: flex; align-items: center; }
+    
+    .back-btn {
+      color: white; font-size: 1.2rem; font-weight: 900;
+      text-decoration: none; margin-right: 15px; line-height: 50px;
+    }
+    .top-bar a { color: white; text-decoration: none; margin-left: 15px; font-size: 0.9rem; }
+    
+    /* Main Content */
+    .main-content {
+      display: flex; justify-content: center; align-items: center; height: 100vh;
+    }
+    .center-box {
+      width: 50%; min-height: 400px;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 30px; backdrop-filter: blur(5px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; gap: 10px;
+    }
+    .test-text { font-size: 2.5rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); }
+    .sub-text { font-size: 0.9rem; color: rgba(0, 0, 0, 0.6); }
+    
+    /* ボタンの調整: 中央から左右に10pxずつ離す (5px + 5px) */
+    .btn-container { display: flex; gap: 10px; margin: 10px 0; }
+    button {
+      padding: 10px 25px; font-size: 1.1rem; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(2px);
+      cursor: pointer; transition: background 0.2s;
+    }
+    button:hover { background: rgba(255, 255, 255, 0.7); }
+
+    .bar-wrapper { width: 90%; margin: 5px 0; }
+    .bar-container { width: 100%; height: 25px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; display: flex; }
+    .bar-y { height: 100%; background: #4caf50; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
+    .bar-n { height: 100%; background: #f44336; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
+    .timer-text { font-size: 0.8rem; color: #333; margin-top: 5px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="bg-image"></div>
+  
+  <div class="top-bar">
+    <div class="bar-left-wrapper">
+      <a href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">← ホームページに戻る</a>
+      <div id="linksContainer" style="display:flex;"></div>
+    </div>
+    <div><span id="dayDate"></span> <span id="time"></span></div>
+  </div>
+
+  <div class="main-content">
+    <div class="center-box">
+      <div class="test-text">私はふにゃオスですか？</div>
+      <div class="sub-text">by たぬきーぬ</div>
+      <div class="btn-container">
+        <!-- 左右に5pxずつ余白を持たせるため、marginで調整 -->
+        <button onclick="vote('soft_survey_y')" style="margin-right: 5px;">はい</button>
+        <button onclick="vote('soft_survey_n')" style="margin-left: 5px;">いいえ</button>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-container">
+          <div id="bar-y" class="bar-y" style="width: 50%;">はい(50%)</div>
+          <div id="bar-n" class="bar-n" style="width: 50%;">いいえ(50%)</div>
+        </div>
+      </div>
+      <div id="status" class="timer-text"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    
+    async function loadLinksFile() {
+      try {
+        const response = await fetch('links.txt');
+        if (!response.ok) return;
+        const text = await response.text();
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+        const linksContainer = document.getElementById('linksContainer');
+        for (let i = 0; i < lines.length; ) {
+          const buttonMatch = lines[i].match(/~([^~]+)~/);
+          const linkMatch = (i+1 < lines.length) ? lines[i+1].match(/=([^=]+)=/) : null;
+          if (buttonMatch && linkMatch) {
+            const a = document.createElement('a');
+            a.href = linkMatch[1]; a.target = '_blank'; a.textContent = buttonMatch[1];
+            linksContainer.appendChild(a);
+            i += 2;
+          } else i++;
+        }
+      } catch (err) { console.error(err); }
+    }
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString('ja-JP');
+      document.getElementById('dayDate').textContent = (now.getMonth()+1) + "/" + now.getDate();
+    }, 1000);
+    loadLinksFile();
+
+    const db = getDatabase(initializeApp({
+      apiKey: "AIzaSyAFEhguRtpgokh37YZCtHxjA8tHO4tu6Lg",
+      authDomain: "tanuki-nu-vrc-profile.firebaseapp.com",
+      databaseURL: "https://tanuki-nu-vrc-profile-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tanuki-nu-vrc-profile",
+      storageBucket: "tanuki-nu-vrc-profile.firebasedatabase.app",
+      messagingSenderId: "751669057525",
+      appId: "1:751669057525:web:cf65d84fdcd2a4416d32bc",
+      measurementId: "G-L7JBGHCZ1E"
+    }));
+
+    onValue(ref(db), (snapshot) => {
+      const data = snapshot.val() || { soft_survey_y: 0, soft_survey_n: 0 };
+      const y = data.soft_survey_y || 0, n = data.soft_survey_n || 0, total = y + n || 1;
+      const yP = Math.round(y/total*100), nP = Math.round(n/total*100);
+      document.getElementById('bar-y').style.width = yP + "%";
+      document.getElementById('bar-y').innerText = yP > 10 ? "はい("+yP+"%)" : "";
+      document.getElementById('bar-n').style.width = nP + "%";
+      document.getElementById('bar-n').innerText = nP > 10 ? "いいえ("+nP+"%)" : "";
+    });
+
+    window.vote = (path) => {
+      const lastVote = localStorage.getItem('lastVote');
+      const now = new Date().getTime();
+      if (lastVote && now - lastVote < 86400000) return;
+      runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => localStorage.setItem('lastVote', now));
+    };
+  </script>
+</body>
+</html>

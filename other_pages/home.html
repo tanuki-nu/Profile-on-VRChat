@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -112,12 +111,20 @@
             letter-spacing: 0.5px;
         }
 
-        /* 新しいセクションナビ (はじめての方へ / 他のアカウントのリンク / 改変データ) */
+        /* 新しいセクションナビ（カードと同じ透過の枠、1本のバーとして描画） */
         .section-nav {
+            width: calc(100% - 40px);
+            max-width: 1000px;
+            margin: 20px auto;
             display: flex;
-            justify-content: center;
-            gap: 24px;
-            padding: 20px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5); /* カードと同じ透過 */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 900;
         }
 
         .section-button {
@@ -125,14 +132,16 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 18px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             color: #4a4a4a;
             font-size: 1rem;
             text-decoration: none;
-            transition: color 0.2s ease, transform 0.08s ease;
+            transition: color 0.2s ease; /* transform removed to stop "大きくなる" */
             z-index: 1;
+            background: transparent;
+            border: none;
         }
 
         /* 背景の四角（他の要素と同じ透過度） */
@@ -147,7 +156,7 @@
 
         .section-button:hover {
             color: #333;
-            transform: translateY(-2px);
+            /* transform removed */
         }
 
         .section-button.active {
@@ -158,7 +167,7 @@
 
         .container {
             max-width: 1000px;
-            margin: 40px auto;
+            margin: 20px auto;
             padding: 0 20px;
         }
 
@@ -175,6 +184,8 @@
             justify-content: center;
             flex-direction: column;
             transition: width 0.2s ease, margin 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .card h2 {
@@ -197,11 +208,11 @@
             color: #333;
             font-weight: 500;
             cursor: pointer;
-            transition: transform 0.08s ease;
+            transition: none; /* 動きなし */
         }
 
         .profile-box:hover {
-            transform: translateY(-3px);
+            /* no transform */
         }
 
         /* タイルレイアウト（他のアカウントのリンク） */
@@ -220,14 +231,13 @@
             cursor: pointer;
             color: #333;
             font-weight: 500;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            transition: transform 0.08s ease, box-shadow 0.12s ease;
+            overflow: visible;
+            white-space: normal; /* 折り返し許可 */
+            text-overflow: clip;
+            transition: box-shadow 0.12s ease; /* transform removed */
         }
 
         .tile:hover {
-            transform: translateY(-4px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.06);
         }
 
@@ -236,6 +246,7 @@
             line-height: 1.8;
             color: #444;
             word-break: break-word;
+            white-space: pre-wrap; /* 改行を反映 */
         }
 
         .modified-text a {
@@ -256,6 +267,7 @@
             width: calc(100% - 150px);
             margin-left: 75px;
             margin-right: 75px;
+            box-sizing: border-box;
         }
 
         @media (max-width: 768px) {
@@ -288,9 +300,9 @@
             }
 
             .section-nav {
-                flex-direction: column;
-                gap: 12px;
-                padding: 12px;
+                width: calc(100% - 24px);
+                padding: 8px;
+                gap: 8px;
             }
 
             .card.wide {
@@ -331,7 +343,7 @@
         <p class="welcome-message">お越しになっていただきありがとうございます！</p>
     </header>
 
-    <!-- 新しいセクションナビ -->
+    <!-- 新しいセクションナビ（1本のバー） -->
     <div class="section-nav" role="tablist" aria-label="主要セクション">
         <button class="section-button active" data-section="first" id="btn-first" role="tab" aria-selected="true">はじめての方へ</button>
         <button class="section-button" data-section="accounts" id="btn-accounts" role="tab" aria-selected="false">他のアカウントのリンク</button>
@@ -378,7 +390,6 @@
                         });
                         i += 2;
                     } else {
-                        // If not a pair, try to advance by 1 to avoid infinite loop
                         i += 1;
                     }
                 }
@@ -420,7 +431,6 @@
 
         // ユーティリティ: テキスト内のURLをリンクに変換
         function linkify(text) {
-            // 簡易的なURL検出
             const urlRegex = /((https?:\/\/)[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/g;
             return text.replace(urlRegex, function(url) {
                 return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
@@ -434,14 +444,18 @@
                 if (!response.ok) throw new Error('modified_data.txt を取得できませんでした');
                 let text = await response.text();
 
-                // 《...》で囲まれた部分を太字にし、括弧自体は表示しない
-                // ネストは考慮せず、最も単純な置換を行う
+                // 改行を保持するために一旦エスケープせずに処理
+                // 《...》で囲まれた部分を太字かつ大きめにし、括弧自体は表示しない
+                // 例: 《重要》 -> <strong style="font-size:1.15rem">重要</strong>
                 text = text.replace(/《([^》]+)》/g, function(_, inner) {
-                    return `<strong>${inner}</strong>`;
+                    return `<strong style="font-weight:700; font-size:1.15rem; display:inline-block;">${inner}</strong>`;
                 });
 
                 // URLをリンク化
                 text = linkify(text);
+
+                // 改行を <br> に変換して表示を保つ（pre-wrap CSS もあるが確実に反映させる）
+                text = text.replace(/\r?\n/g, '<br>');
 
                 return text;
             } catch (err) {
@@ -464,11 +478,6 @@
                     <h2>はじめての方へ</h2>
                     <a id="profileBoxInner" class="profile-box" href="${document.getElementById('topProfileLink').href}" target="_blank" rel="noopener noreferrer">プロフィール</a>
                 `;
-                // ensure top nav profile link is same
-                const profileBoxInner = document.getElementById('profileBoxInner');
-                profileBoxInner.addEventListener('click', (e) => {
-                    // default anchor behavior will open the profile link in a new tab
-                });
             } else if (section === 'accounts') {
                 // 他のアカウントのリンク
                 // 幅をページ端から75px離す
@@ -477,7 +486,6 @@
 
                 // Ensure links are loaded
                 if (parsedLinks.length === 0) {
-                    // try to load links if not yet loaded
                     await loadLinksFile();
                 }
 
@@ -493,7 +501,8 @@
                         tile.tabIndex = 0;
                         tile.setAttribute('role', 'link');
                         tile.setAttribute('aria-label', item.text);
-                        tile.textContent = item.text;
+                        // テキストを折り返すようにして、最後まで表示されるようにする
+                        tile.innerHTML = `<div style="word-break:break-word;">${item.text}</div>`;
                         tile.addEventListener('click', () => {
                             window.open(item.url, '_blank', 'noopener');
                         });
@@ -538,7 +547,6 @@
         (async function init() {
             await loadLinksFile(); // 先に読み込んでおく
             initSectionNav();
-            // 初期表示は「はじめての方へ」なので既にHTMLにあるが念のため切り替え処理を呼ぶ
             await switchSection('first');
 
             updateTime();

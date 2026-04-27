@@ -70,7 +70,7 @@
   
   <div class="top-bar">
     <div class="bar-left-wrapper">
-      <a href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">← ホームページに戻る</a>
+      <a id="backHomeBtn" href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">← ホームページに戻る</a>
       <div id="linksContainer" style="display:flex;"></div>
     </div>
     <div><span id="dayDate"></span> <span id="time"></span></div>
@@ -113,6 +113,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // --- 5分後に自動で戻る処理 ---
+    const AUTO_REDIRECT_MS = 5 * 60 * 1000; // 5分
+    setTimeout(() => {
+      const homeUrl = document.getElementById('backHomeBtn').href;
+      window.location.href = homeUrl;
+    }, AUTO_REDIRECT_MS);
+
     // --- 投票制限の管理機能 ---
     const VOTE_COOLDOWN = 24 * 60 * 60 * 1000; // 24時間
 
@@ -124,7 +131,6 @@
       const btnN = document.getElementById('btn-n');
 
       if (lastVote && (now - lastVote < VOTE_COOLDOWN)) {
-        // 制限中
         btnY.disabled = true;
         btnN.disabled = true;
         
@@ -133,18 +139,15 @@
         const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
         statusEl.textContent = `次の投票まであと ${hours}時間${mins}分`;
       } else {
-        // 投票可能
         btnY.disabled = false;
         btnN.disabled = false;
         statusEl.textContent = "1日1回投票できます";
       }
     }
 
-    // 投票関数をグローバルに公開
     window.vote = (path) => {
       const lastVote = localStorage.getItem('lastVote');
       const now = new Date().getTime();
-      
       if (lastVote && (now - lastVote < VOTE_COOLDOWN)) return;
 
       runTransaction(ref(db, path), (currentData) => {
@@ -157,7 +160,6 @@
       });
     };
 
-    // --- データ監視と更新 ---
     onValue(ref(db), (snapshot) => {
       const data = snapshot.val() || { soft_survey_y: 0, soft_survey_n: 0 };
       const y = data.soft_survey_y || 0;
@@ -172,7 +174,6 @@
       document.getElementById('bar-n').innerText = nP > 10 ? `いいえ(${nP}%)` : "";
     });
 
-    // --- 時計とリンク読み込み ---
     async function loadLinksFile() {
       try {
         const response = await fetch('links.txt');
@@ -197,7 +198,7 @@
       const now = new Date();
       document.getElementById('time').textContent = now.toLocaleTimeString('ja-JP');
       document.getElementById('dayDate').textContent = (now.getMonth()+1) + "/" + now.getDate();
-      updateVoteUI(); // タイマー表示を更新
+      updateVoteUI();
     }, 1000);
 
     loadLinksFile();

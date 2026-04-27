@@ -45,20 +45,25 @@
     .test-text { font-size: 2.5rem; font-weight: bold; color: rgba(0, 0, 0, 0.8); }
     .sub-text { font-size: 0.9rem; color: rgba(0, 0, 0, 0.6); }
     
-    /* ボタンの調整: 中央から左右に10pxずつ離す (5px + 5px) */
     .btn-container { display: flex; gap: 10px; margin: 10px 0; }
     button {
       padding: 10px 25px; font-size: 1.1rem; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.5);
       background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(2px);
-      cursor: pointer; transition: background 0.2s;
+      cursor: pointer; transition: all 0.2s;
     }
-    button:hover { background: rgba(255, 255, 255, 0.7); }
+    button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.7); }
+    
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      background: rgba(0, 0, 0, 0.1);
+    }
 
     .bar-wrapper { width: 90%; margin: 5px 0; }
     .bar-container { width: 100%; height: 25px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; display: flex; }
     .bar-y { height: 100%; background: #4caf50; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
     .bar-n { height: 100%; background: #f44336; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold; }
-    .timer-text { font-size: 0.8rem; color: #333; margin-top: 5px; font-weight: bold; }
+    .timer-text { font-size: 0.9rem; color: #d32f2f; margin-top: 5px; font-weight: bold; min-height: 1.2em; }
   </style>
 </head>
 <body>
@@ -66,7 +71,7 @@
   
   <div class="top-bar">
     <div class="bar-left-wrapper">
-      <a href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">← ホームページに戻る</a>
+      <a id="homeLink" href="https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/home.html" class="back-btn">← ホームページに戻る</a>
       <div id="linksContainer" style="display:flex;"></div>
     </div>
     <div><span id="dayDate"></span> <span id="time"></span></div>
@@ -77,9 +82,8 @@
       <div class="test-text">test</div>
       <div class="sub-text">by test</div>
       <div class="btn-container">
-        <!-- 左右に5pxずつ余白を持たせるため、marginで調整 -->
-        <button onclick="vote('soft_survey_y')" style="margin-right: 5px;">はい</button>
-        <button onclick="vote('soft_survey_n')" style="margin-left: 5px;">いいえ</button>
+        <button id="btn-y" onclick="vote('soft_survey_y')" style="margin-right: 5px;">はい</button>
+        <button id="btn-n" onclick="vote('soft_survey_n')" style="margin-left: 5px;">いいえ</button>
       </div>
       <div class="bar-wrapper">
         <div class="bar-container">
@@ -95,6 +99,15 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
     
+    const COOLDOWN_MS = 86400000; 
+
+    // --- 自動リダイレクト設定 ---
+    const AUTO_BACK_TIME = 5 * 60 * 1000; // 5分 (ミリ秒)
+    setTimeout(() => {
+      const homeUrl = document.getElementById('homeLink').href;
+      window.location.href = homeUrl;
+    }, AUTO_BACK_TIME);
+
     async function loadLinksFile() {
       try {
         const response = await fetch('links.txt');
@@ -114,11 +127,37 @@
         }
       } catch (err) { console.error(err); }
     }
+
+    function updateUIStatus() {
+      const lastVote = localStorage.getItem('lastVote');
+      const now = new Date().getTime();
+      const statusEl = document.getElementById('status');
+      const btnY = document.getElementById('btn-y');
+      const btnN = document.getElementById('btn-n');
+
+      if (lastVote && now - lastVote < COOLDOWN_MS) {
+        const remaining = COOLDOWN_MS - (now - lastVote);
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        
+        statusEl.textContent = `次回投票まで: ${h}時間${m}分${s}秒`;
+        btnY.disabled = true;
+        btnN.disabled = true;
+      } else {
+        statusEl.textContent = "";
+        btnY.disabled = false;
+        btnN.disabled = false;
+      }
+    }
+
     setInterval(() => {
       const now = new Date();
       document.getElementById('time').textContent = now.toLocaleTimeString('ja-JP');
       document.getElementById('dayDate').textContent = (now.getMonth()+1) + "/" + now.getDate();
+      updateUIStatus();
     }, 1000);
+
     loadLinksFile();
 
     const db = getDatabase(initializeApp({
@@ -145,8 +184,12 @@
     window.vote = (path) => {
       const lastVote = localStorage.getItem('lastVote');
       const now = new Date().getTime();
-      if (lastVote && now - lastVote < 86400000) return;
-      runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => localStorage.setItem('lastVote', now));
+      if (lastVote && now - lastVote < COOLDOWN_MS) return;
+
+      runTransaction(ref(db, path), (d) => (d || 0) + 1).then(() => {
+        localStorage.setItem('lastVote', new Date().getTime());
+        updateUIStatus();
+      });
     };
   </script>
 </body>

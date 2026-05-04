@@ -421,8 +421,8 @@
 
         async function loadModifiedData() {
             try {
-                const response = await fetch('modified_data.txt');
-                if (!response.ok) throw new Error('modified_data.txt を取得できませんでした');
+                const response = await fetch('blog_text_data.txt');
+                if (!response.ok) throw new Error('blog_text_data.txt を取得できませんでした');
                 let text = await response.text();
 
                 // 《...》を太字かつ大きめにして、括弧自体は表示しない
@@ -434,8 +434,8 @@
                 text = text.replace(/\r?\n/g, '<br>');
                 return text;
             } catch (err) {
-                console.error('modified_data.txtの読み込みに失敗しました:', err);
-                return '<p>改変データを読み込めませんでした。</p>';
+                console.error('blog_text_data.txtの読み込みに失敗しました:', err);
+                return '<p>ブログを読み込めませんでした。</p>';
             }
         }
 

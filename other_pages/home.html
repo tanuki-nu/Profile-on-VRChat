@@ -546,7 +546,7 @@
                 }
             } else if (section === 'modified') {
                 mainCard.classList.remove('wide');
-                mainCard.innerHTML = `<h2>改変データ</h2><div id="modifiedArea" class="modified-text">読み込み中...</div>`;
+                mainCard.innerHTML = `<h2>ブログ</h2><div id="modifiedArea" class="modified-text">読み込み中...</div>`;
                 const modifiedArea = document.getElementById('modifiedArea');
                 const content = await loadModifiedData();
                 modifiedArea.innerHTML = content;

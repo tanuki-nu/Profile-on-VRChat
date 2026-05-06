@@ -1,78 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>背景ページ</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #5a5a5a;
-      padding-top: 60px;
-      background: url('https://lh3.googleusercontent.com/d/1jYQ8VGZfxMiAujakcluvgSk-JdXr60Rr') center/cover fixed;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
-      overflow: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.45);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .overlay {
-      position: relative;
-      z-index: 1;
-      min-height: calc(100vh - 60px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .box {
-      background: rgba(255, 255, 255, 0.78);
-      padding: 24px 32px;
-      border-radius: 16px;
-      max-width: 720px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-      backdrop-filter: blur(4px);
-    }
-
-    h1 {
-      margin-bottom: 12px;
-      font-size: 2rem;
-    }
-
-    p {
-      font-size: 1rem;
-      line-height: 1.8;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ページ</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('https://drive.google.com/file/d/1ElCezkQiFcDir7lQafNvh38l8eKpC7Mg/view?usp=sharing');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 <body>
-  <div class="overlay">
-    <div class="box">
-      <h1>背景ページ</h1>
-      <p>Google Drive の画像をやわらかく背景にしています。</p>
-    </div>
-  </div>
+    <!-- ここにコンテンツを追加 -->
 </body>
 </html>

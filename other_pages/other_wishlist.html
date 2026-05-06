@@ -77,30 +77,35 @@
     </div>
 
     <script>
-        const DEFAULT_PAGE = 'default';
+        function getPageName(url) {
+            return url.replace(/\//g, '').trim();
+        }
 
         async function loadProducts() {
             try {
                 const response = await fetch('wishlist_context.txt');
                 const text = await response.text();
-                const lines = text.trim().split('\n');
+                const lines = text.trim().split('\n').filter(line => line.trim());
 
                 const productsContainer = document.getElementById('products');
                 productsContainer.innerHTML = '';
 
                 lines.forEach(line => {
+                    // //...//の部分を取得（名前）
                     const nameMatch = line.match(/\/\/(.+?)\/\//);
+                    // ^^...^^の部分を取得（リンク先）
                     const linkMatch = line.match(/\^\^(.+?)\^\^/);
+                    // **...**の部分を取得（説明）
                     const descMatch = line.match(/\*\*(.+?)\*\*/);
 
-                    if (nameMatch && descMatch) {
+                    if (nameMatch && linkMatch && descMatch) {
                         let productName = nameMatch[1];
-                        const productLink = linkMatch ? linkMatch[1] : '#';
+                        const productLink = linkMatch[1];
                         const productDesc = descMatch[1];
 
-                        // /default/ を現在のページ名に置き換える
+                        // /default/ の場合、リンク先のページ名を表示名に使用
                         if (productName === '/default/') {
-                            productName = DEFAULT_PAGE;
+                            productName = getPageName(productLink);
                         }
 
                         const productBox = document.createElement('div');
@@ -111,7 +116,7 @@
                         `;
 
                         // クリック時に移動
-                        if (productLink !== '#' && productLink !== '/default/') {
+                        if (productLink !== '/default/') {
                             productBox.onclick = () => window.location.href = productLink;
                         }
 
@@ -124,7 +129,6 @@
             }
         }
 
-        // ページ読み込み時に実行
         window.addEventListener('DOMContentLoaded', loadProducts);
     </script>
 </body>

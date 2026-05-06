@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URLタイトル取得</title>
+</head>
+<body>
+  <input id="urlInput" type="text" placeholder="https://example.com" style="width: 400px;">
+  <button id="btn">タイトル取得</button>
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    async function getPageTitle(url) {
+      try {
+        const res = await fetch(url);
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const title = doc.querySelector('title')?.textContent?.trim();
+        return title || 'タイトルなし';
+      } catch (error) {
+        console.error(error);
+        return '取得失敗';
+      }
+    }
+
+    document.getElementById('btn').addEventListener('click', async () => {
+      const url = document.getElementById('urlInput').value.trim();
+      const result = document.getElementById('result');
+
+      if (!url) {
+        result.textContent = 'URLを入れてね';
+        return;
+      }
+
+      result.textContent = '取得中...';
+      const title = await getPageTitle(url);
+      result.textContent = title;
+    });
+  </script>
+</body>
+</html>

@@ -23,23 +23,37 @@
       background: url('https://lh3.googleusercontent.com/d/1jYQ8VGZfxMiAujakcluvgSk-JdXr60Rr') center/cover fixed;
       background-attachment: fixed;
       min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.45);
+      z-index: 0;
+      pointer-events: none;
     }
 
     .overlay {
+      position: relative;
+      z-index: 1;
       min-height: calc(100vh - 60px);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.35);
-      backdrop-filter: blur(2px);
+      padding: 24px;
     }
 
     .box {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.78);
       padding: 24px 32px;
       border-radius: 16px;
       max-width: 720px;
       text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(4px);
     }
 
     h1 {
@@ -57,7 +71,7 @@
   <div class="overlay">
     <div class="box">
       <h1>背景ページ</h1>
-      <p>Google Drive の画像を背景にしています。</p>
+      <p>Google Drive の画像をやわらかく背景にしています。</p>
     </div>
   </div>
 </body>

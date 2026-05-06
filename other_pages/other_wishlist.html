@@ -55,7 +55,8 @@
             border-radius: 20px;
             padding: 20px;
             box-sizing: border-box;
-            margin-bottom: 15px;
+            /* margin-bottomを margin: 0 auto 15px; に変更して中央寄せ */
+            margin: 0 auto 15px;
             cursor: pointer;
             transition: transform 0.2s, opacity 0.2s;
         }
@@ -121,16 +122,21 @@
                     const linkLine = lines[i + 1]?.trim() || '';
                     const descLine = lines[i + 2]?.trim() || '';
 
-                    // 各行から値を抽出
                     let productName = nameLine.replace(/\//g, '');
                     let productLink = linkLine.replace(/\^/g, '');
-                    let productDesc = descLine.replace(/\*/g, '');
+                    
+                    // '*' を取り除いたベースの説明文を作成
+                    let rawDesc = descLine.replace(/\*/g, '');
 
-                    // ''で挟まれた値を抽出して'have'かどうか判定
-                    let innerValue = descLine.replace(/\*/g, '').replace(/'/g, '');
+                    // ''で囲まれた値を正規表現で抽出 (例: 'have' -> have)
+                    let match = rawDesc.match(/'([^']+)'/);
+                    let innerValue = match ? match[1] : '';
                     let isDisabled = innerValue === 'have';
 
-                    if (productName && productLink && productDesc) {
+                    // 実際の表示用説明文からは '' の部分を削除して前後の空白を取り除く
+                    let productDesc = rawDesc.replace(/'[^']+'/, '').trim();
+
+                    if (productName && productLink && (productDesc || isDisabled)) {
                         // /default/ の場合、リンク先のページのタイトルを表示名に使用
                         if (productName === 'default' || productName === '/default/') {
                             productName = await fetchPageTitle(productLink);

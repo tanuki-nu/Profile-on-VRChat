@@ -38,7 +38,15 @@
         .title {
             font-size: 24px;
             font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #999;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         .product-box {
@@ -72,13 +80,24 @@
     <div class="container">
         <div class="main-box">
             <div class="title">test</div>
+            <div class="subtitle">test</div>
             <div id="products"></div>
         </div>
     </div>
 
     <script>
-        function getPageName(url) {
-            return url.replace(/\//g, '').trim();
+        async function fetchPageTitle(url) {
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const title = doc.querySelector('title')?.textContent || url;
+                return title;
+            } catch (error) {
+                console.error('タイトルの取得に失敗:', error);
+                return url;
+            }
         }
 
         async function loadProducts() {
@@ -102,9 +121,9 @@
                     let productDesc = descLine.replace(/\*/g, '');
 
                     if (productName && productLink && productDesc) {
-                        // /default/ の場合、リンク先のページ名を表示名に使用
+                        // /default/ の場合、リンク先のページのタイトルを表示名に使用
                         if (productName === 'default' || productName === '/default/') {
-                            productName = getPageName(productLink);
+                            productName = await fetchPageTitle(productLink);
                         }
 
                         const productBox = document.createElement('div');

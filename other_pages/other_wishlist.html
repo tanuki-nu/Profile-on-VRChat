@@ -116,7 +116,7 @@
                 const productsContainer = document.getElementById('products');
                 productsContainer.innerHTML = '';
 
-                // ★修正点: 4行ずつ処理 (名前、リンク、説明、状態)
+                // 4行ずつ処理 (名前、リンク、説明、状態)
                 for (let i = 0; i < lines.length; i += 4) {
                     const nameLine = lines[i]?.trim() || '';
                     const linkLine = lines[i + 1]?.trim() || '';
@@ -132,8 +132,8 @@
                     let innerValue = statusLine.replace(/'/g, '');
                     let isDisabled = innerValue === 'have';
 
-                    // 名前、リンク、説明が存在する場合のみ生成
-                    if (productName && productLink && productDesc) {
+                    // 名前、説明が存在する場合のみ生成
+                    if (productName && productDesc) {
                         // /default/ の場合、リンク先のページのタイトルを表示名に使用
                         if (productName === 'default') {
                             productName = await fetchPageTitle(productLink);

@@ -10,5 +10,8 @@
 ~たぬきーぬに対するアンケート~
 =https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/survey/am_i_soft.html=
 
-~欲しいものリスト~
+~欲しいものリスト(amazon)~
 =https://www.amazon.co.jp/hz/wishlist/ls/1DYG1HT3D7MR5?=
+
+~欲しいものリスト(全般)~
+=https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/other_wishlist=

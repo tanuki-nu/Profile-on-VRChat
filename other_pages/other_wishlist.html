@@ -15,18 +15,117 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
+            padding-top: 200px;
         }
 
-        .box {
+        .container {
             width: 75vw;
-            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .main-box {
+            width: 100%;
             background-color: rgba(255, 255, 255, 0.6);
             border-radius: 20px;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .product-box {
+            width: 87.5%;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .product-box:hover {
+            transform: scale(1.02);
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-description {
+            font-size: 14px;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div class="box"></div>
+    <div class="container">
+        <div class="main-box">
+            <div class="title">test</div>
+            <div id="products"></div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_PAGE = 'default';
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('wishlist_context.txt');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+
+                const productsContainer = document.getElementById('products');
+                productsContainer.innerHTML = '';
+
+                lines.forEach(line => {
+                    const nameMatch = line.match(/\/\/(.+?)\/\//);
+                    const linkMatch = line.match(/\^\^(.+?)\^\^/);
+                    const descMatch = line.match(/\*\*(.+?)\*\*/);
+
+                    if (nameMatch && descMatch) {
+                        let productName = nameMatch[1];
+                        const productLink = linkMatch ? linkMatch[1] : '#';
+                        const productDesc = descMatch[1];
+
+                        // /default/ を現在のページ名に置き換える
+                        if (productName === '/default/') {
+                            productName = DEFAULT_PAGE;
+                        }
+
+                        const productBox = document.createElement('div');
+                        productBox.className = 'product-box';
+                        productBox.innerHTML = `
+                            <div class="product-name">${productName}</div>
+                            <div class="product-description">${productDesc}</div>
+                        `;
+
+                        // クリック時に移動
+                        if (productLink !== '#' && productLink !== '/default/') {
+                            productBox.onclick = () => window.location.href = productLink;
+                        }
+
+                        productsContainer.appendChild(productBox);
+                    }
+                });
+            } catch (error) {
+                console.error('ファイルの読み込みに失敗しました:', error);
+                document.getElementById('products').innerHTML = '<p>データの読み込みに失敗しました</p>';
+            }
+        }
+
+        // ページ読み込み時に実行
+        window.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
 </body>
 </html>

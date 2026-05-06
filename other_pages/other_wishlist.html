@@ -55,8 +55,7 @@
             border-radius: 20px;
             padding: 20px;
             box-sizing: border-box;
-            /* margin-bottomを margin: 0 auto 15px; に変更して中央寄せ */
-            margin: 0 auto 15px;
+            margin: 0 auto 15px; /* 中央寄せ */
             cursor: pointer;
             transition: transform 0.2s, opacity 0.2s;
         }
@@ -111,34 +110,32 @@
             try {
                 const response = await fetch('wishlist_context.txt');
                 const text = await response.text();
+                // 空行を削除して配列化
                 const lines = text.trim().split('\n').filter(line => line.trim());
 
                 const productsContainer = document.getElementById('products');
                 productsContainer.innerHTML = '';
 
-                // 3行ずつ処理
-                for (let i = 0; i < lines.length; i += 3) {
+                // ★修正点: 4行ずつ処理 (名前、リンク、説明、状態)
+                for (let i = 0; i < lines.length; i += 4) {
                     const nameLine = lines[i]?.trim() || '';
                     const linkLine = lines[i + 1]?.trim() || '';
                     const descLine = lines[i + 2]?.trim() || '';
+                    const statusLine = lines[i + 3]?.trim() || ''; // 状態の行を追加
 
+                    // 各行から記号を削除して抽出
                     let productName = nameLine.replace(/\//g, '');
                     let productLink = linkLine.replace(/\^/g, '');
-                    
-                    // '*' を取り除いたベースの説明文を作成
-                    let rawDesc = descLine.replace(/\*/g, '');
+                    let productDesc = descLine.replace(/\*/g, '');
 
-                    // ''で囲まれた値を正規表現で抽出 (例: 'have' -> have)
-                    let match = rawDesc.match(/'([^']+)'/);
-                    let innerValue = match ? match[1] : '';
+                    // 4行目の '' で挟まれた値を抽出して 'have' かどうか判定
+                    let innerValue = statusLine.replace(/'/g, '');
                     let isDisabled = innerValue === 'have';
 
-                    // 実際の表示用説明文からは '' の部分を削除して前後の空白を取り除く
-                    let productDesc = rawDesc.replace(/'[^']+'/, '').trim();
-
-                    if (productName && productLink && (productDesc || isDisabled)) {
+                    // 名前、リンク、説明が存在する場合のみ生成
+                    if (productName && productLink && productDesc) {
                         // /default/ の場合、リンク先のページのタイトルを表示名に使用
-                        if (productName === 'default' || productName === '/default/') {
+                        if (productName === 'default') {
                             productName = await fetchPageTitle(productLink);
                         }
 
@@ -156,7 +153,7 @@
                         `;
 
                         // クリック時に移動（disabledの場合は実行されない）
-                        if (!isDisabled) {
+                        if (!isDisabled && productLink) {
                             productBox.onclick = () => window.location.href = productLink;
                         }
 

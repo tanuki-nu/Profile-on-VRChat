@@ -90,21 +90,20 @@
                 const productsContainer = document.getElementById('products');
                 productsContainer.innerHTML = '';
 
-                lines.forEach(line => {
-                    // //...//の部分を取得（名前）
-                    const nameMatch = line.match(/\/\/(.+?)\/\//);
-                    // ^^...^^の部分を取得（リンク先）
-                    const linkMatch = line.match(/\^\^(.+?)\^\^/);
-                    // **...**の部分を取得（説明）
-                    const descMatch = line.match(/\*\*(.+?)\*\*/);
+                // 3行ずつ処理
+                for (let i = 0; i < lines.length; i += 3) {
+                    const nameLine = lines[i]?.trim() || '';
+                    const linkLine = lines[i + 1]?.trim() || '';
+                    const descLine = lines[i + 2]?.trim() || '';
 
-                    if (nameMatch && linkMatch && descMatch) {
-                        let productName = nameMatch[1];
-                        const productLink = linkMatch[1];
-                        const productDesc = descMatch[1];
+                    // 各行から値を抽出
+                    let productName = nameLine.replace(/\//g, '');
+                    let productLink = linkLine.replace(/\^/g, '');
+                    let productDesc = descLine.replace(/\*/g, '');
 
+                    if (productName && productLink && productDesc) {
                         // /default/ の場合、リンク先のページ名を表示名に使用
-                        if (productName === '/default/') {
+                        if (productName === 'default' || productName === '/default/') {
                             productName = getPageName(productLink);
                         }
 
@@ -116,13 +115,11 @@
                         `;
 
                         // クリック時に移動
-                        if (productLink !== '/default/') {
-                            productBox.onclick = () => window.location.href = productLink;
-                        }
+                        productBox.onclick = () => window.location.href = productLink;
 
                         productsContainer.appendChild(productBox);
                     }
-                });
+                }
             } catch (error) {
                 console.error('ファイルの読み込みに失敗しました:', error);
                 document.getElementById('products').innerHTML = '<p>データの読み込みに失敗しました</p>';

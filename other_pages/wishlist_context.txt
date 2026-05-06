@@ -1,9 +1,29 @@
-/【VRChat用】抜け毛まき散らしギミック『ハウスダストクルセイダース』【MA対応】 - 八咫烏重工 - BOOTH/
-^https://booth.pm/ja/items/8047244^
-*ハウスダスト・クルセイダース*
+/真冬 Mafuyu / オリジナル3Dモデル - ぷらすわん - BOOTH/
+^https://booth.pm/ja/items/5007531^
+*一番欲しいアバター。XのDMに送りつけといてください。*
 'havent'
 
-/test/
+/RealKissSystem リアルキスシステム【VRChat】 - すーぱーねこや - BOOTH/
+^https://booth.pm/ja/items/5354575^
+*買ってくれたらうれしい改変。XのDMに送りつけといてください。*
+'havent'
+
+/【67アバター対応】なでなでEx - ravii - BOOTH/
+^https://booth.pm/ja/items/5068109^
+*買ってくれたらうれしい改変。XのDMに送りつけといてください。*
+'havent'
+
+/テンプレート/
 ^^
-*test*
+*テンプレート*
+'have'
+
+/テンプレート/
+^^
+*テンプレート*
+'have'
+
+/テンプレート/
+^^
+*テンプレート*
 'have'

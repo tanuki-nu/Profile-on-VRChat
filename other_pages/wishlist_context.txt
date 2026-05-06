@@ -4,6 +4,6 @@
 'havent'
 
 /test/
-^^
+^https://github.com/tanuki-nu/Profile-on-VRChat/edit/main/other_pages/wishlist_context.txt^
 *test*
 'have'

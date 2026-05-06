@@ -57,11 +57,17 @@
             box-sizing: border-box;
             margin-bottom: 15px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.2s;
         }
 
         .product-box:hover {
             transform: scale(1.02);
+        }
+
+        .product-box.disabled {
+            opacity: 0.4;
+            cursor: default;
+            pointer-events: none;
         }
 
         .product-name {
@@ -120,6 +126,10 @@
                     let productLink = linkLine.replace(/\^/g, '');
                     let productDesc = descLine.replace(/\*/g, '');
 
+                    // ''で挟まれた値を抽出して'have'かどうか判定
+                    let innerValue = descLine.replace(/\*/g, '').replace(/'/g, '');
+                    let isDisabled = innerValue === 'have';
+
                     if (productName && productLink && productDesc) {
                         // /default/ の場合、リンク先のページのタイトルを表示名に使用
                         if (productName === 'default' || productName === '/default/') {
@@ -128,13 +138,21 @@
 
                         const productBox = document.createElement('div');
                         productBox.className = 'product-box';
+                        
+                        // 'have'の場合はdisabledクラスを追加
+                        if (isDisabled) {
+                            productBox.classList.add('disabled');
+                        }
+
                         productBox.innerHTML = `
                             <div class="product-name">${productName}</div>
                             <div class="product-description">${productDesc}</div>
                         `;
 
-                        // クリック時に移動
-                        productBox.onclick = () => window.location.href = productLink;
+                        // クリック時に移動（disabledの場合は実行されない）
+                        if (!isDisabled) {
+                            productBox.onclick = () => window.location.href = productLink;
+                        }
 
                         productsContainer.appendChild(productBox);
                     }

@@ -15,3 +15,6 @@
 
 ~欲しいものリスト(全般)~
 =https://tanuki-nu.github.io/Profile-on-VRChat/other_pages/other_wishlist=
+
+~会話デッキ~
+=https://tanuki-nu.github.io/VRChat-conversation-deck/pages/index.html=
